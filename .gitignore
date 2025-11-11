@@ -1,0 +1,16 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+.export/
+.import/
+.cache/
+*.tmp
+*.translation
+*.import
+*.godot.tmp
+mono_crash.*
+
+# OS junk
+.DS_Store
+Thumbs.db
+CLAUDE.md

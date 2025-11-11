@@ -1,0 +1,21 @@
+[gd_scene load_steps=3 format=3 uid="uid://dy3321gxnfo52"]
+
+[ext_resource type="PackedScene" uid="uid://dladrui27sl6k" path="res://Scenes/BattleScene.tscn" id="1_d27am"]
+[ext_resource type="Script" uid="uid://dtoye1lgsal37" path="res://Scenes/BossScene.cs" id="2_r5e8v"]
+
+[node name="Control" instance=ExtResource("1_d27am")]
+script = ExtResource("2_r5e8v")
+
+[node name="TextureRect" type="TextureRect" parent="." index="4"]
+visible = false
+layout_mode = 0
+offset_right = 1152.0
+offset_bottom = 648.0
+
+[node name="Label" type="Label" parent="." index="5"]
+layout_mode = 0
+offset_left = 419.0
+offset_top = 60.0
+offset_right = 532.0
+offset_bottom = 91.0
+text = "BOSS FIGHT!!!! "

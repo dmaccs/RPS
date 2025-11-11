@@ -1,0 +1,91 @@
+[gd_scene load_steps=2 format=3 uid="uid://dq3icqgjso7pq"]
+
+[ext_resource type="Script" uid="uid://wvyi8361mqsp" path="res://Scripts/Shop.cs" id="1_ymdee"]
+
+[node name="ShopScene" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_ymdee")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Label" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "Shop"
+
+[node name="HBoxContainer1" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/HBoxContainer1"]
+layout_mode = 2
+text = "Item 1 Cost"
+
+[node name="Button" type="Button" parent="VBoxContainer/HBoxContainer1"]
+layout_mode = 2
+text = "Item Name"
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/HBoxContainer2"]
+layout_mode = 2
+text = "Item 2 Cost"
+
+[node name="Button" type="Button" parent="VBoxContainer/HBoxContainer2"]
+layout_mode = 2
+text = "Item Name"
+
+[node name="HBoxContainer3" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/HBoxContainer3"]
+layout_mode = 2
+text = "Item 3 Cost"
+
+[node name="Button" type="Button" parent="VBoxContainer/HBoxContainer3"]
+layout_mode = 2
+text = "Item Name"
+
+[node name="HBoxContainer4" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/HBoxContainer4"]
+layout_mode = 2
+text = "Item 4 Cost"
+
+[node name="Button" type="Button" parent="VBoxContainer/HBoxContainer4"]
+layout_mode = 2
+text = "Item Name"
+
+[node name="HBoxContainer5" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/HBoxContainer5"]
+layout_mode = 2
+text = "Item 5 Cost"
+
+[node name="Button" type="Button" parent="VBoxContainer/HBoxContainer5"]
+layout_mode = 2
+text = "Item Name"
+
+[node name="HBoxContainer6" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/HBoxContainer6"]
+layout_mode = 2
+text = "Item 6 Cost"
+
+[node name="Button" type="Button" parent="VBoxContainer/HBoxContainer6"]
+layout_mode = 2
+text = "Item Name"
+
+[node name="Button" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+text = "Exit Shop"

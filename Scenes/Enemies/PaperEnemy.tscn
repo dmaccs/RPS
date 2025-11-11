@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://csftjxygowhnc"]
+
+[ext_resource type="PackedScene" uid="uid://lx282ixqfc78" path="res://Scenes/Enemies/BaseEnemy.tscn" id="1_klen6"]
+
+[node name="Enemy" instance=ExtResource("1_klen6")]
+
+[node name="Name" parent="." index="1"]
+text = "Paper Enemy
+"

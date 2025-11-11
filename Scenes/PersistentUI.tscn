@@ -1,0 +1,80 @@
+[gd_scene format=3 uid="uid://bfocg4hu7xw5a"]
+
+[ext_resource path="res://Scripts/PersistentUI.cs" type="Script" id="1"]
+
+[node name="PersistentUi" type="CanvasLayer"]
+script = ExtResource( 1 )
+
+[node name="Stats" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 14.0
+offset_top = 520.0
+offset_right = 105.0
+offset_bottom = 630.0
+
+[node name="HealthLabel" type="Label" parent="Stats"]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 5.0
+offset_right = 89.0
+offset_bottom = 28.0
+text = "Health: 10"
+
+[node name="Strength Label" type="Label" parent="Stats"]
+layout_mode = 0
+offset_left = 12.0
+offset_top = 34.0
+offset_right = 91.0
+offset_bottom = 109.0
+text = "Rock: 1
+Paper: 1
+Scissors: 1"
+
+[node name="Inventory" type="Control" parent="."]
+layout_mode = 3
+anchor_left = 0.193
+anchor_top = 0.019000001
+anchor_right = 0.22700001
+anchor_bottom = 0.21800001
+offset_left = 504.664
+offset_top = 15.687999
+offset_right = 505.49597
+offset_bottom = -73.26401
+
+[node name="ItemList" type="ItemList" parent="Inventory"]
+layout_mode = 0
+offset_left = 54.0
+offset_top = -3.0
+offset_right = 173.0
+offset_bottom = 37.0
+
+[node name="ItemLabel" type="Label" parent="Inventory"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
+text = "Items:"
+
+[node name="Relics" type="Control" parent="."]
+layout_mode = 3
+anchor_left = 0.14500001
+anchor_top = 0.09900001
+anchor_right = 0.14500001
+anchor_bottom = 0.09900001
+offset_left = 742.95996
+offset_top = -36.152008
+offset_right = 782.95996
+offset_bottom = 3.847992
+
+[node name="RelicList" type="ItemList" parent="Relics"]
+layout_mode = 0
+offset_left = 52.0
+offset_top = -5.0
+offset_right = 219.0
+offset_bottom = 35.0
+
+[node name="RelilcsLabel" type="Label" parent="Relics"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
+text = "Relics:"

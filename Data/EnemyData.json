@@ -1,0 +1,45 @@
+{
+  "RockEnemy": {
+    "health": 3,
+    "strength": 1,
+    "throwsPerTurn": 1,
+    "allowedThrows": ["rock", "paper", "scissors"],
+    "frequencies": [80, 10, 10]
+  },
+  "PaperEnemy": {
+    "health": 3,
+    "strength": 1,
+    "throwsPerTurn": 1,
+    "allowedThrows": ["rock", "paper", "scissors"],
+    "frequencies": [10, 80, 10]
+  },
+  "ScissorsEnemy": {
+    "health": 3,
+    "strength": 1,
+    "throwsPerTurn": 1,
+    "allowedThrows": ["rock", "paper", "scissors"],
+    "frequencies": [10, 10, 80]
+  }
+  ,
+  "RandomEnemy": {
+    "health": 4,
+    "strength": 1,
+    "throwsPerTurn": 1,
+    "allowedThrows": ["rock", "paper", "scissors"],
+    "behavior": "random"
+  },
+  "CopycatEnemy": {
+    "health": 4,
+    "strength": 1,
+    "throwsPerTurn": 1,
+    "allowedThrows": ["rock", "paper", "scissors"],
+    "behavior": "copy_last"
+  },
+  "CounterEnemy": {
+    "health": 5,
+    "strength": 1,
+    "throwsPerTurn": 1,
+    "allowedThrows": ["rock", "paper", "scissors"],
+    "behavior": "counter_most_common"
+  }
+}

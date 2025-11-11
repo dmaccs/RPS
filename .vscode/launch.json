@@ -1,0 +1,16 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": ".NET Core Launch (Godot)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "C:/Users/Dylan/Documents/Godot/Godot_v4.5.1-stable_mono_win64/Godot_v4.5.1-stable_mono_win64",
+      "args": ["--path", "${workspaceFolder}"],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "console": "internalConsole"
+    }
+  ]
+}
