@@ -9,11 +9,17 @@ public partial class GameState : Node
     public int PlayerHealth { get; private set; } = 10;
     public int MaxPlayerHealth { get; private set; } = 10;
     // No global player strength; move strength is tracked per MoveData
-    public int PlayerGold { get; private set; } = 0;
+    public int PlayerGold { get; private set; } = 50;
 
     // Inventory
     private List<string> items = new();
     private List<string> relics = new();
+
+    // Buff system
+    // Temporary buffs (buff_type -> (amount, turns_remaining))
+    private Dictionary<string, (int amount, int turnsRemaining)> temporaryBuffs = new();
+    // Permanent buffs (buff_type -> amount)
+    private Dictionary<string, int> permanentBuffs = new();
 
     // Persistent UI instance
     private PersistentUI persistentUI;
@@ -96,5 +102,88 @@ public partial class GameState : Node
     public void RefreshUI()
     {
         UpdateUI();
+    }
+
+    // Buff management
+    public void AddBuff(string buffType, int amount, int duration)
+    {
+        temporaryBuffs[buffType] = (amount, duration);
+        GD.Print($"Added temporary buff: {buffType} (+{amount}) for {duration} turns");
+        UpdateUI();
+    }
+
+    public void AddPermanentBuff(string buffType, int amount)
+    {
+        if (permanentBuffs.ContainsKey(buffType))
+            permanentBuffs[buffType] += amount;
+        else
+            permanentBuffs[buffType] = amount;
+
+        GD.Print($"Added permanent buff: {buffType} (+{amount})");
+        UpdateUI();
+    }
+
+    public int GetBuffAmount(string buffType)
+    {
+        int total = 0;
+
+        // Add temporary buff
+        if (temporaryBuffs.TryGetValue(buffType, out var tempBuff))
+            total += tempBuff.amount;
+
+        // Add permanent buff
+        if (permanentBuffs.TryGetValue(buffType, out int permBuff))
+            total += permBuff;
+
+        return total;
+    }
+
+    public void DecrementBuffDurations()
+    {
+        var expiredBuffs = new List<string>();
+
+        foreach (var kvp in temporaryBuffs)
+        {
+            var buffType = kvp.Key;
+            var (amount, turnsRemaining) = kvp.Value;
+
+            int newDuration = turnsRemaining - 1;
+            if (newDuration <= 0)
+            {
+                expiredBuffs.Add(buffType);
+                GD.Print($"Buff expired: {buffType}");
+            }
+            else
+            {
+                temporaryBuffs[buffType] = (amount, newDuration);
+            }
+        }
+
+        // Remove expired buffs
+        foreach (var buffType in expiredBuffs)
+        {
+            temporaryBuffs.Remove(buffType);
+        }
+
+        if (expiredBuffs.Count > 0)
+            UpdateUI();
+    }
+
+    public void IncreaseMaxHealth(int amount)
+    {
+        MaxPlayerHealth += amount;
+        PlayerHealth += amount; // Also heal for the amount
+        UpdateUI();
+    }
+
+    // Get inventory lists for UI
+    public List<string> GetItems()
+    {
+        return new List<string>(items);
+    }
+
+    public List<string> GetRelics()
+    {
+        return new List<string>(relics);
     }
 }

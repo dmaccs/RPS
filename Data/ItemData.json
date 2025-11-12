@@ -1,0 +1,102 @@
+{
+  "Consumables": {
+    "health_potion": {
+      "Id": "health_potion",
+      "Name": "Health Potion",
+      "Description": "Restores 5 HP during battle",
+      "Cost": 15,
+      "Rarity": "Common",
+      "Effect": {
+        "EffectType": "heal",
+        "Amount": 5,
+        "Duration": 0
+      }
+    },
+    "large_health_potion": {
+      "Id": "large_health_potion",
+      "Name": "Large Health Potion",
+      "Description": "Restores 10 HP during battle",
+      "Cost": 30,
+      "Rarity": "Uncommon",
+      "Effect": {
+        "EffectType": "heal",
+        "Amount": 10,
+        "Duration": 0
+      }
+    },
+    "power_brew": {
+      "Id": "power_brew",
+      "Name": "Power Brew",
+      "Description": "Increases damage by 2 for 3 turns",
+      "Cost": 20,
+      "Rarity": "Common",
+      "Effect": {
+        "EffectType": "damage_boost",
+        "Amount": 2,
+        "Duration": 3
+      }
+    },
+    "bomb": {
+      "Id": "bomb",
+      "Name": "Bomb",
+      "Description": "Deals 3 direct damage to enemy",
+      "Cost": 25,
+      "Rarity": "Uncommon",
+      "Effect": {
+        "EffectType": "direct_damage",
+        "Amount": 3,
+        "Duration": 0
+      }
+    },
+    "shield_potion": {
+      "Id": "shield_potion",
+      "Name": "Shield Potion",
+      "Description": "Reduces incoming damage by 2 for 2 turns",
+      "Cost": 25,
+      "Rarity": "Uncommon",
+      "Effect": {
+        "EffectType": "damage_reduction",
+        "Amount": 2,
+        "Duration": 2
+      }
+    }
+  },
+  "Relics": {
+    "power_stone": {
+      "Id": "power_stone",
+      "Name": "Power Stone",
+      "Description": "All moves deal +1 damage permanently",
+      "Cost": 50,
+      "Rarity": "Rare",
+      "Effect": {
+        "EffectType": "permanent_damage_boost",
+        "Amount": 1,
+        "Duration": 0
+      }
+    },
+    "vitality_amulet": {
+      "Id": "vitality_amulet",
+      "Name": "Vitality Amulet",
+      "Description": "Increases maximum HP by 5",
+      "Cost": 40,
+      "Rarity": "Uncommon",
+      "Effect": {
+        "EffectType": "max_hp_boost",
+        "Amount": 5,
+        "Duration": 0
+      }
+    },
+    "lucky_coin": {
+      "Id": "lucky_coin",
+      "Name": "Lucky Coin",
+      "Description": "Gain 10 extra gold after each battle",
+      "Cost": 60,
+      "Rarity": "Rare",
+      "Effect": {
+        "EffectType": "gold_boost",
+        "Amount": 10,
+        "Duration": 0
+      }
+    }
+  }
+}

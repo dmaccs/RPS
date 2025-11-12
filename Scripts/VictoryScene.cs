@@ -15,4 +15,13 @@ public partial class VictoryScene : Control
 		GetTree().ChangeSceneToFile("res://Scenes/MainMenuScene.tscn");
 	}
 
+	public override void _ExitTree()
+	{
+		if (MainMenuButton != null)
+		{
+			MainMenuButton.Pressed -= OnMainMenuPressed;
+		}
+
+		base._ExitTree();
+	}
 }

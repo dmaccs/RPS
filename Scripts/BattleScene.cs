@@ -8,11 +8,12 @@ public partial class BattleScene : Control
 	private TextureButton scissors;
 
 	private Enemy currentEnemy = null;
+	private Node currentEnemyRoot = null; // Track root node to prevent leaks
 	private Player player = null;
 	private BattleManager battleManager = null;
 
 	private int points = 0;
-	// Called when the node enters the scene tree for the first time.
+
 	public override void _Ready()
 	{
 		player = GameManager.Instance.Player;
@@ -22,7 +23,14 @@ public partial class BattleScene : Control
 		rock.Pressed += () => OnButtonPressed(Throws.rock);
 		paper.Pressed += () => OnButtonPressed(Throws.paper);
 		scissors.Pressed += () => OnButtonPressed(Throws.scissors);
+
 		GetEnemy();
+	}
+
+	// Public method so PersistentUI can access the current enemy for item usage
+	public Enemy GetCurrentEnemy()
+	{
+		return currentEnemy;
 	}
 
 	private void OnButtonPressed(Throws playerThrow)
@@ -45,11 +53,19 @@ public partial class BattleScene : Control
 
 	private void GetEnemy()
 	{
-		// Remove old enemy node if it exists
-		if (currentEnemy != null && currentEnemy.IsInsideTree())
+		// Remove old enemy nodes if they exist
+		if (currentEnemy != null)
 		{
-			currentEnemy.QueueFree();
+			currentEnemy.FightEndSignal -= FightOver;
 		}
+
+		if (currentEnemyRoot != null && currentEnemyRoot.IsInsideTree())
+		{
+			currentEnemyRoot.QueueFree();
+			currentEnemyRoot = null;
+		}
+
+		currentEnemy = null;
 
 		// Choose which enemy to spawn — for now, random
 	// Include some tougher enemies
@@ -67,11 +83,14 @@ public partial class BattleScene : Control
 			currentEnemy = new Enemy();
 			currentEnemy.Initialize(enemyId);
 			AddChild(currentEnemy);
+			currentEnemyRoot = currentEnemy; // Track the root node
 		}
 		else
 		{
 			var inst = packed.Instantiate();
 			AddChild(inst);
+			currentEnemyRoot = inst; // Track the root node
+
 			// The script may be attached to the root or a child; try to get the Enemy instance
 			currentEnemy = inst as Enemy;
 			if (currentEnemy == null)
@@ -100,4 +119,21 @@ public partial class BattleScene : Control
 		GD.Print(result);
 		GameManager.Instance.LoadNextScene();
     }
+
+	public override void _ExitTree()
+	{
+		// Disconnect enemy signal
+		if (currentEnemy != null)
+		{
+			currentEnemy.FightEndSignal -= FightOver;
+		}
+
+		// Clean up the root node to prevent leaks
+		if (currentEnemyRoot != null && currentEnemyRoot.IsInsideTree())
+		{
+			currentEnemyRoot.QueueFree();
+		}
+
+		base._ExitTree();
+	}
 }

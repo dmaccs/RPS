@@ -21,10 +21,15 @@ GameManager="*res://GameManager.cs"
 EnemyDatabase="*res://EnemyDatabase.cs"
 RngManager="*res://Scripts/RngManager.cs"
 GameState="*res://Scripts/GameState.cs"
+ItemDatabase="*res://Scripts/ItemDatabase.cs"
 
 [dotnet]
 
 project/assembly_name="RPS"
+
+[editor]
+
+run/main_run_args="--verbose"
 
 [rendering]
 

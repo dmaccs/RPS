@@ -14,6 +14,7 @@ public partial class GameManager : Node
     public override void _Ready()
     {
         Instance = this;
+
         // Hardcoded progression
         sceneOrder = new List<string>
         {
@@ -29,9 +30,27 @@ public partial class GameManager : Node
 
         LoadNextScene();
     }
+
+    public override void _Notification(int what)
+    {
+        if (what == NotificationPredelete)
+        {
+            if (Player != null)
+            {
+                Player.QueueFree();
+                Player = null;
+            }
+        }
+    }
     
     public void ResetGame()
     {
+        // Free the old Player before creating a new one
+        if (Player != null)
+        {
+            Player.QueueFree();
+        }
+
         Player = new Player();
         stageIndex = 0;
         LoadNextScene();

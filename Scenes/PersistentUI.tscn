@@ -21,12 +21,20 @@ offset_right = 89.0
 offset_bottom = 28.0
 text = "Health: 10"
 
+[node name="GoldLabel" type="Label" parent="Stats"]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 28.0
+offset_right = 89.0
+offset_bottom = 51.0
+text = "Gold: 50"
+
 [node name="Strength Label" type="Label" parent="Stats"]
 layout_mode = 0
 offset_left = 12.0
-offset_top = 34.0
+offset_top = 57.0
 offset_right = 91.0
-offset_bottom = 109.0
+offset_bottom = 132.0
 text = "Rock: 1
 Paper: 1
 Scissors: 1"
@@ -48,6 +56,7 @@ offset_left = 54.0
 offset_top = -3.0
 offset_right = 173.0
 offset_bottom = 37.0
+allow_rmb_select = true
 
 [node name="ItemLabel" type="Label" parent="Inventory"]
 layout_mode = 0

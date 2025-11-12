@@ -34,4 +34,24 @@ public partial class RestScene : Control
 		GD.Print("Exiting Rest Scene");
 		GameManager.Instance.LoadNextScene();
 	}
+
+	public override void _ExitTree()
+	{
+		if (RestButton != null)
+		{
+			RestButton.Pressed -= OnRestPressed;
+		}
+
+		if (TrainButton != null)
+		{
+			TrainButton.Pressed -= OnTrainPressed;
+		}
+
+		if (ExitButton != null)
+		{
+			ExitButton.Pressed -= OnExitPressed;
+		}
+
+		base._ExitTree();
+	}
 }

@@ -11,10 +11,19 @@ public partial class MainMenu : Control
 		startButton.Pressed += OnStartButtonPressed;
     }
 
-	private void OnStartButtonPressed()	
+	private void OnStartButtonPressed()
 	{
 		GD.Print("Start Button Pressed");
 		GameManager.Instance.ResetGame();
 	}
 
+	public override void _ExitTree()
+	{
+		if (startButton != null)
+		{
+			startButton.Pressed -= OnStartButtonPressed;
+		}
+
+		base._ExitTree();
+	}
 }
