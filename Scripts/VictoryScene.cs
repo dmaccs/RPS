@@ -1,9 +1,8 @@
 using Godot;
-using System;
 
 public partial class VictoryScene : Control
 {
-	Button MainMenuButton;
+	private Button MainMenuButton;
 	public override void _Ready()
 	{
 		MainMenuButton = GetNode<Button>("VBoxContainer/Button");
@@ -14,7 +13,6 @@ public partial class VictoryScene : Control
 	{
 		GD.Print("Returning to Main Menu");
 		GetTree().ChangeSceneToFile("res://Scenes/MainMenuScene.tscn");
-		//GameManager.Instance.ResetGame();
 	}
 
 }

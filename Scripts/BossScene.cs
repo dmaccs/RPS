@@ -1,6 +1,4 @@
 using Godot;
-using System;
-using System.Transactions;
 
 public partial class BossScene : BattleScene
 {

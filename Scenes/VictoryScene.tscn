@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://bjdtd3ih7hfis"]
 
 [ext_resource type="Texture2D" uid="uid://w8acd12873bn" path="res://art/GameOver.png" id="1_3xaia"]
-[ext_resource type="Script" uid="uid://dcblb3bnj6ev1" path="res://Scenes/VictoryScene.cs" id="1_c20pg"]
+[ext_resource type="Script" uid="uid://dcblb3bnj6ev1" path="res://Scripts/VictoryScene.cs" id="1_c20pg"]
 
 [node name="VictoryScene" type="Control"]
 layout_mode = 3
