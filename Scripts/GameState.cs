@@ -11,6 +11,10 @@ public partial class GameState : Node
     // No global player strength; move strength is tracked per MoveData
     public int PlayerGold { get; private set; } = 50;
 
+    // Game over tracking
+    public string LastKillerName { get; set; } = "";
+    public int LastScore { get; set; } = 100;
+
     // Inventory
     private List<string> items = new();
     private List<string> relics = new();
@@ -185,5 +189,20 @@ public partial class GameState : Node
     public List<string> GetRelics()
     {
         return new List<string>(relics);
+    }
+
+    // Reset game state for new run
+    public void ResetGame()
+    {
+        PlayerHealth = 10;
+        MaxPlayerHealth = 10;
+        PlayerGold = 50;
+        items.Clear();
+        relics.Clear();
+        temporaryBuffs.Clear();
+        permanentBuffs.Clear();
+        LastKillerName = "";
+        LastScore = 100;
+        UpdateUI();
     }
 }

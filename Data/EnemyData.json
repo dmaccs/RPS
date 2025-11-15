@@ -41,5 +41,13 @@
     "throwsPerTurn": 1,
     "allowedThrows": ["rock", "paper", "scissors"],
     "behavior": "counter_most_common"
+  },
+  "BossEnemy": {
+    "health": 15,
+    "strength": 3,
+    "throwsPerTurn": 2,
+    "allowedThrows": ["rock", "paper", "scissors"],
+    "behavior": "random",
+    "isBoss": true
   }
 }

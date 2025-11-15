@@ -10,4 +10,6 @@ public class EnemyData
     public List<int> frequencies { get; set; }
     // Behavior hints: "random", "copy_last", "counter_most_common", or null/default
     public string behavior { get; set; }
+    // Boss flag: if true, throws twice and picks best result
+    public bool isBoss { get; set; } = false;
 }
