@@ -3,14 +3,21 @@ using Rps;
 
 public partial class BattleScene : Control
 {
-	private TextureButton rock;
-	private TextureButton paper;
-	private TextureButton scissors;
+	protected TextureButton rock;
+	protected TextureButton paper;
+	protected TextureButton scissors;
 
-	private Enemy currentEnemy = null;
-	private Node currentEnemyRoot = null; // Track root node to prevent leaks
-	private Player player = null;
-	private BattleManager battleManager = null;
+	// Combat feedback UI elements
+	protected Control combatFeedbackPanel;
+	protected TextureRect playerThrowIcon;
+	protected TextureRect enemyThrowIcon;
+	protected Label resultLabel;
+	protected Label damageLabel;
+
+	protected Enemy currentEnemy = null;
+	protected Node currentEnemyRoot = null; // Track root node to prevent leaks
+	protected Player player = null;
+	protected BattleManager battleManager = null;
 
 	private int points = 0;
 
@@ -24,6 +31,16 @@ public partial class BattleScene : Control
 		paper.Pressed += () => OnButtonPressed(Throws.paper);
 		scissors.Pressed += () => OnButtonPressed(Throws.scissors);
 
+		// Get combat feedback UI elements
+		combatFeedbackPanel = GetNode<Control>("CombatFeedbackPanel");
+		playerThrowIcon = GetNode<TextureRect>("CombatFeedbackPanel/HBoxContainer/PlayerThrowIcon");
+		enemyThrowIcon = GetNode<TextureRect>("CombatFeedbackPanel/HBoxContainer/EnemyThrowIcon");
+		resultLabel = GetNode<Label>("CombatFeedbackPanel/HBoxContainer/VBoxContainer/ResultLabel");
+		damageLabel = GetNode<Label>("CombatFeedbackPanel/HBoxContainer/VBoxContainer/DamageLabel");
+
+		// Hide feedback panel initially
+		combatFeedbackPanel.Visible = false;
+
 		GetEnemy();
 	}
 
@@ -33,25 +50,86 @@ public partial class BattleScene : Control
 		return currentEnemy;
 	}
 
-	private void OnButtonPressed(Throws playerThrow)
+	protected void OnButtonPressed(Throws playerThrow)
 	{
 		GD.Print("You threw: " + playerThrow);
-		
-		battleManager.ResolveRound(playerThrow);
-		
-		// if (currentEnemy.Health <= 0)
-		// {
-		// 	GD.Print("Enemy Defeated!");
-		// 	points++;
-		// 	GameManager.Instance.LoadNextScene();
-		// }
-		// if (player.Health <= 0)
-		// {
-		// 	GD.Print("You lose! Your final score was: " + points);
-		// }
+
+		var result = battleManager.ResolveRound(playerThrow);
+		ShowCombatFeedback(result);
+
+		// Check if player died
+		if (player.IsDead())
+		{
+			GD.Print("Player died!");
+			// Store killer info in GameState
+			if (GameState.Instance != null && currentEnemy != null)
+			{
+				GameState.Instance.LastKillerName = currentEnemy.id ?? "Unknown Enemy";
+				GameState.Instance.LastScore = 100; // Placeholder score for now
+			}
+			// Transition to lose scene
+			GetTree().CallDeferred("change_scene_to_file", "res://Scenes/LoseScene.tscn");
+		}
 	}
 
-	private void GetEnemy()
+	protected void ShowCombatFeedback(RoundResult result)
+	{
+		// Load and display throw textures
+		playerThrowIcon.Texture = LoadThrowTexture(result.PlayerThrow);
+		enemyThrowIcon.Texture = LoadThrowTexture(result.EnemyThrow);
+
+		// Set result text and color
+		switch (result.Outcome)
+		{
+			case RoundOutcome.PlayerWin:
+				resultLabel.Text = "You Win!";
+				resultLabel.Modulate = new Color(0, 1, 0); // Green
+				break;
+			case RoundOutcome.EnemyWin:
+				resultLabel.Text = "Enemy Wins!";
+				resultLabel.Modulate = new Color(1, 0, 0); // Red
+				break;
+			case RoundOutcome.Draw:
+				resultLabel.Text = "Draw!";
+				resultLabel.Modulate = new Color(1, 1, 0); // Yellow
+				break;
+		}
+
+		// Set damage text
+		if (result.DamageDealt > 0)
+		{
+			if (result.DamageTarget == "enemy")
+			{
+				damageLabel.Text = $"Enemy takes {result.DamageDealt} damage!";
+			}
+			else
+			{
+				damageLabel.Text = $"You take {result.DamageDealt} damage!";
+			}
+		}
+		else
+		{
+			damageLabel.Text = "No damage!";
+		}
+
+		// Show the feedback panel
+		combatFeedbackPanel.Visible = true;
+	}
+
+	protected Texture2D LoadThrowTexture(Throws throwType)
+	{
+		string texturePath = throwType switch
+		{
+			Throws.rock => "res://art/Rock.png",
+			Throws.paper => "res://art/scroll.png",
+			Throws.scissors => "res://art/Sciz.png",
+			_ => "res://art/Rock.png"
+		};
+
+		return GD.Load<Texture2D>(texturePath);
+	}
+
+	protected void GetEnemy()
 	{
 		// Remove old enemy nodes if they exist
 		if (currentEnemy != null)
@@ -67,11 +145,19 @@ public partial class BattleScene : Control
 
 		currentEnemy = null;
 
-		// Choose which enemy to spawn — for now, random
-	// Include some tougher enemies
-	string[] enemyTypes = { "RockEnemy", "PaperEnemy", "ScissorsEnemy", "RandomEnemy", "CopycatEnemy", "CounterEnemy" };
-		RandomNumberGenerator rng = RngManager.Instance.Rng;
-		string enemyId = enemyTypes[rng.RandiRange(0, enemyTypes.Length - 1)];
+		// Get enemy based on current battle progression
+		string enemyId;
+		if (BattleProgressionManager.Instance != null)
+		{
+			enemyId = BattleProgressionManager.Instance.GetEnemyForCurrentBattle();
+		}
+		else
+		{
+			// Fallback if BattleProgressionManager not loaded
+			GD.PrintErr("BattleProgressionManager not found, using fallback enemy selection");
+			string[] fallbackEnemies = { "RockEnemy", "PaperEnemy", "ScissorsEnemy" };
+			enemyId = fallbackEnemies[RngManager.Instance.Rng.RandiRange(0, fallbackEnemies.Length - 1)];
+		}
 
 		// Instance enemy PackedScene so visuals and child nodes exist
 		var scenePath = $"res://Scenes/Enemies/{enemyId}.tscn";
@@ -106,7 +192,7 @@ public partial class BattleScene : Control
 		}
 
 		// Position the enemy and wire up signals
-		currentEnemy.Position = new Vector2(400, 200);
+		currentEnemy.Position = new Vector2(576, 120);
 		currentEnemy.FightEndSignal += FightOver;
 		GD.Print($"Spawned {enemyId}");
 

@@ -6,9 +6,10 @@ public partial class GameManager : Node
 {
 
 	public Player Player { get; private set; } = new Player();
-	
+
 	public static GameManager Instance { get; private set; }
 	private int stageIndex = 0;
+	public int StageIndex => stageIndex; // Public read-only access to stageIndex
     private List<string> sceneOrder;
 
     public override void _Ready()
@@ -20,8 +21,13 @@ public partial class GameManager : Node
         {
             "res://Scenes/BattleScene.tscn",
             "res://Scenes/Rewards.tscn",
+            "res://Scenes/BattleScene.tscn",
+            "res://Scenes/Rewards.tscn",
             "res://Scenes/ShopScene.tscn",
             "res://Scenes/BattleScene.tscn",
+            "res://Scenes/Rewards.tscn",
+            "res://Scenes/BattleScene.tscn",
+            "res://Scenes/Rewards.tscn",
             "res://Scenes/RestScene.tscn",
             "res://Scenes/BossScene.tscn",
             "res://Scenes/VictoryScene.tscn",
@@ -45,6 +51,12 @@ public partial class GameManager : Node
     
     public void ResetGame()
     {
+        // Reset GameState (health, gold, items, relics, etc.)
+        if (GameState.Instance != null)
+        {
+            GameState.Instance.ResetGame();
+        }
+
         // Free the old Player before creating a new one
         if (Player != null)
         {
@@ -53,6 +65,13 @@ public partial class GameManager : Node
 
         Player = new Player();
         stageIndex = 0;
+
+        // Reset battle progression
+        if (BattleProgressionManager.Instance != null)
+        {
+            BattleProgressionManager.Instance.ResetBattles();
+        }
+
         LoadNextScene();
         GameState.Instance.RefreshUI();
     }
@@ -67,6 +86,13 @@ public partial class GameManager : Node
         }
 
         string nextScenePath = sceneOrder[stageIndex];
+
+        // Increment battle counter if loading a BattleScene
+        if (nextScenePath.Contains("BattleScene") && BattleProgressionManager.Instance != null)
+        {
+            BattleProgressionManager.Instance.IncrementBattle();
+        }
+
         stageIndex++;
         CallDeferred(nameof(DeferredChangeScene), nextScenePath);
     }

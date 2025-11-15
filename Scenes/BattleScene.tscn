@@ -40,3 +40,59 @@ offset_right = 936.0
 offset_bottom = 592.0
 texture_normal = ExtResource("3_jpurs")
 stretch_mode = 0
+
+[node name="CombatFeedbackPanel" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -80.0
+offset_right = 200.0
+offset_bottom = 80.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CombatFeedbackPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="PlayerThrowIcon" type="TextureRect" parent="CombatFeedbackPanel/HBoxContainer"]
+custom_minimum_size = Vector2(100, 100)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CombatFeedbackPanel/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+
+[node name="VSLabel" type="Label" parent="CombatFeedbackPanel/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+text = "VS"
+horizontal_alignment = 1
+
+[node name="ResultLabel" type="Label" parent="CombatFeedbackPanel/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+text = "You Win!"
+horizontal_alignment = 1
+
+[node name="DamageLabel" type="Label" parent="CombatFeedbackPanel/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+text = "Enemy takes 5 damage!"
+horizontal_alignment = 1
+
+[node name="EnemyThrowIcon" type="TextureRect" parent="CombatFeedbackPanel/HBoxContainer"]
+custom_minimum_size = Vector2(100, 100)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5

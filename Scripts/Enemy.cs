@@ -10,10 +10,13 @@ public partial class Enemy : Node2D
     private EnemyData enemyData;
     private RandomNumberGenerator rng;
     private IEnemyBehavior behaviorInstance;
+    public bool isBoss = false;
 
     private Label nameLabel;
 
     private Label healthLabel;
+
+    private Label strengthLabel;
 
     [Signal]
     public delegate void FightEndSignalEventHandler(bool result);
@@ -33,6 +36,7 @@ public partial class Enemy : Node2D
         {
             this.health = enemyData.health;
             this.strength = enemyData.strength;
+            this.isBoss = enemyData.isBoss;
         }
         rng = RngManager.Instance?.Rng ?? new RandomNumberGenerator();
 
@@ -40,9 +44,13 @@ public partial class Enemy : Node2D
         behaviorInstance = BehaviorFactory.Create(enemyData?.behavior, enemyData, rng);
 
         healthLabel = GetNodeOrNull<Label>("Health");
+        strengthLabel = GetNodeOrNull<Label>("Strength");
         Label lbl = GetNodeOrNull<Label>("Name");
         if(healthLabel != null){
             healthLabel.Text = "Health: " + health.ToString();
+        }
+        if(strengthLabel != null){
+            strengthLabel.Text = "Strength: " + strength.ToString();
         }
         if (lbl != null)
         {

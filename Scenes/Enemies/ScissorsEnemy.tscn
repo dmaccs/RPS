@@ -4,5 +4,5 @@
 
 [node name="Enemy" instance=ExtResource("1_7w7ss")]
 
-[node name="Name" parent="." index="1"]
+[node name="Name" parent="." index="0"]
 text = "Scissors Enemy"

@@ -17,6 +17,7 @@ config/icon="res://icon.svg"
 
 [autoload]
 
+BattleProgressionManager="*res://Scripts/BattleProgressionManager.cs"
 GameManager="*res://GameManager.cs"
 EnemyDatabase="*res://EnemyDatabase.cs"
 RngManager="*res://Scripts/RngManager.cs"
