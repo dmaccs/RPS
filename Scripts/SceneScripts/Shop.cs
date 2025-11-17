@@ -17,8 +17,14 @@ public partial class Shop : Control
 	private List<ShopSlot> shopSlots = new();
 	private Button exitButton;
 
+	// Tooltip elements
+	private Panel tooltipPanel;
+	private Label tooltipLabel;
+
 	public override void _Ready()
 	{
+		// Create tooltip panel
+		CreateTooltipPanel();
 		// Initialize shop slots
 		for (int i = 1; i <= 6; i++)
 		{
@@ -212,6 +218,91 @@ public partial class Shop : Control
 		slot.ErrorLabel.Visible = true;
 		slot.ErrorTimer.Start();
 		shopSlots[slotIndex] = slot;
+	}
+
+	private void CreateTooltipPanel()
+	{
+		// Create tooltip panel
+		tooltipPanel = new Panel();
+		tooltipPanel.Visible = false;
+		tooltipPanel.MouseFilter = Control.MouseFilterEnum.Ignore;
+		tooltipPanel.ZIndex = 100;
+		AddChild(tooltipPanel);
+
+		// Create tooltip label
+		tooltipLabel = new Label();
+		tooltipLabel.AutowrapMode = TextServer.AutowrapMode.Word;
+		tooltipLabel.CustomMinimumSize = new Vector2(200, 0);
+		tooltipPanel.AddChild(tooltipLabel);
+
+		// Style the tooltip panel
+		var styleBox = new StyleBoxFlat();
+		styleBox.BgColor = new Color(0.1f, 0.1f, 0.1f, 0.95f);
+		styleBox.BorderColor = new Color(0.5f, 0.5f, 0.5f, 1f);
+		styleBox.SetBorderWidthAll(2);
+		styleBox.SetContentMarginAll(8);
+		tooltipPanel.AddThemeStyleboxOverride("panel", styleBox);
+	}
+
+	public override void _Process(double delta)
+	{
+		// Check if mouse is hovering over any shop item button
+		Vector2 mousePos = GetGlobalMousePosition();
+		bool hovering = false;
+
+		for (int i = 0; i < shopSlots.Count; i++)
+		{
+			var slot = shopSlots[i];
+			if (slot.Button != null && slot.ItemData != null && IsInstanceValid(slot.Button))
+			{
+				Rect2 buttonRect = slot.Button.GetGlobalRect();
+				if (buttonRect.HasPoint(mousePos))
+				{
+					// Show tooltip for this item
+					ShowTooltip(slot.ItemData, mousePos);
+					hovering = true;
+					break;
+				}
+			}
+		}
+
+		if (!hovering)
+		{
+			HideTooltip();
+		}
+	}
+
+	private void ShowTooltip(ItemData itemData, Vector2 mousePos)
+	{
+		if (itemData == null)
+			return;
+
+		tooltipLabel.Text = itemData.Description;
+		tooltipPanel.Visible = true;
+
+		// Position tooltip near mouse
+		tooltipPanel.Position = mousePos + new Vector2(15, 15);
+
+		// Keep tooltip on screen
+		Vector2 viewportSize = GetViewportRect().Size;
+		Vector2 tooltipSize = tooltipPanel.Size;
+
+		if (tooltipPanel.Position.X + tooltipSize.X > viewportSize.X)
+		{
+			tooltipPanel.Position = new Vector2(tooltipPanel.Position.X - tooltipSize.X - 30, tooltipPanel.Position.Y);
+		}
+		if (tooltipPanel.Position.Y + tooltipSize.Y > viewportSize.Y)
+		{
+			tooltipPanel.Position = new Vector2(tooltipPanel.Position.X, tooltipPanel.Position.Y - tooltipSize.Y - 30);
+		}
+	}
+
+	private void HideTooltip()
+	{
+		if (tooltipPanel != null)
+		{
+			tooltipPanel.Visible = false;
+		}
 	}
 
 	private void OnExitPressed()

@@ -74,7 +74,7 @@ public class BattleManager
             }
             else if (result1 > result2)
             {
-                enemyThrow = enemyThrow;
+                //enemyThrow = enemyThrow;
                 GD.Print($"Boss chose {enemyThrow}");
             }
             else if (result2 > result1)
@@ -145,6 +145,9 @@ public class BattleManager
             // Draw - no damage
             result.Outcome = RoundOutcome.Draw;
             GD.Print("Draw - no damage");
+
+            // Allow enemy to react to draw
+            enemy.OnDraw();
         }
 
         // After resolving the round, record the player's chosen throw for future rounds

@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://dy3321gxnfo52"]
 
-[ext_resource type="PackedScene" uid="uid://dladrui27sl6k" path="res://Scenes/BattleScene.tscn" id="1_d27am"]
-[ext_resource type="Script" uid="uid://dtoye1lgsal37" path="res://Scripts/BossScene.cs" id="2_r5e8v"]
+[ext_resource type="PackedScene" uid="uid://dladrui27sl6k" path="res://Scenes/Combat/BattleScene.tscn" id="1_d27am"]
+[ext_resource type="Script" uid="uid://dtoye1lgsal37" path="res://Scripts/Combat/BossScene.cs" id="2_r5e8v"]
 
 [node name="Control" instance=ExtResource("1_d27am")]
 script = ExtResource("2_r5e8v")

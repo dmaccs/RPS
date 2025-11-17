@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://dq3icqgjso7pq"]
 
-[ext_resource type="Script" uid="uid://wvyi8361mqsp" path="res://Scripts/Shop.cs" id="1_ymdee"]
+[ext_resource type="Script" uid="uid://wvyi8361mqsp" path="res://Scripts/SceneScripts/Shop.cs" id="1_ymdee"]
 
 [node name="ShopScene" type="Control"]
 layout_mode = 3
@@ -33,9 +33,9 @@ text = "Item Name"
 
 [node name="ErrorLabel" type="Label" parent="VBoxContainer/HBoxContainer1"]
 visible = false
+modulate = Color(1, 0.3, 0.3, 1)
 layout_mode = 2
 text = "Not enough gold!"
-modulate = Color(1, 0.3, 0.3, 1)
 
 [node name="HBoxContainer2" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
@@ -50,9 +50,9 @@ text = "Item Name"
 
 [node name="ErrorLabel" type="Label" parent="VBoxContainer/HBoxContainer2"]
 visible = false
+modulate = Color(1, 0.3, 0.3, 1)
 layout_mode = 2
 text = "Not enough gold!"
-modulate = Color(1, 0.3, 0.3, 1)
 
 [node name="HBoxContainer3" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
@@ -67,9 +67,9 @@ text = "Item Name"
 
 [node name="ErrorLabel" type="Label" parent="VBoxContainer/HBoxContainer3"]
 visible = false
+modulate = Color(1, 0.3, 0.3, 1)
 layout_mode = 2
 text = "Not enough gold!"
-modulate = Color(1, 0.3, 0.3, 1)
 
 [node name="HBoxContainer4" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
@@ -84,9 +84,9 @@ text = "Item Name"
 
 [node name="ErrorLabel" type="Label" parent="VBoxContainer/HBoxContainer4"]
 visible = false
+modulate = Color(1, 0.3, 0.3, 1)
 layout_mode = 2
 text = "Not enough gold!"
-modulate = Color(1, 0.3, 0.3, 1)
 
 [node name="HBoxContainer5" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
@@ -101,9 +101,9 @@ text = "Item Name"
 
 [node name="ErrorLabel" type="Label" parent="VBoxContainer/HBoxContainer5"]
 visible = false
+modulate = Color(1, 0.3, 0.3, 1)
 layout_mode = 2
 text = "Not enough gold!"
-modulate = Color(1, 0.3, 0.3, 1)
 
 [node name="HBoxContainer6" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
@@ -118,9 +118,9 @@ text = "Item Name"
 
 [node name="ErrorLabel" type="Label" parent="VBoxContainer/HBoxContainer6"]
 visible = false
+modulate = Color(1, 0.3, 0.3, 1)
 layout_mode = 2
 text = "Not enough gold!"
-modulate = Color(1, 0.3, 0.3, 1)
 
 [node name="Button" type="Button" parent="VBoxContainer"]
 layout_mode = 2

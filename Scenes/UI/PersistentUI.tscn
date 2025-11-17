@@ -1,9 +1,9 @@
-[gd_scene format=3 uid="uid://bfocg4hu7xw5a"]
+[gd_scene load_steps=2 format=3 uid="uid://bfocg4hu7xw5a"]
 
-[ext_resource path="res://Scripts/PersistentUI.cs" type="Script" id="1"]
+[ext_resource type="Script" uid="uid://rt75nwxet8ej" path="res://Scripts/UI/PersistentUI.cs" id="1"]
 
 [node name="PersistentUi" type="CanvasLayer"]
-script = ExtResource( 1 )
+script = ExtResource("1")
 
 [node name="Stats" type="Control" parent="."]
 layout_mode = 3
@@ -58,7 +58,6 @@ text = "Items:"
 
 [node name="ItemSlots" type="HBoxContainer" parent="Inventory"]
 layout_mode = 0
-offset_left = 0.0
 offset_top = 25.0
 offset_right = 260.0
 offset_bottom = 85.0
@@ -72,6 +71,8 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 text = "Empty"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -86,6 +87,8 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 text = "Empty"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -100,6 +103,8 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 text = "Empty"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -123,7 +128,6 @@ offset_left = 52.0
 offset_top = -5.0
 offset_right = 202.0
 offset_bottom = 115.0
-max_columns = 1
 
 [node name="RelilcsLabel" type="Label" parent="Relics"]
 layout_mode = 0
@@ -133,7 +137,6 @@ text = "Relics:"
 
 [node name="Tooltip" type="Panel" parent="."]
 visible = false
-layout_mode = 0
 offset_right = 200.0
 offset_bottom = 50.0
 
@@ -146,5 +149,7 @@ offset_left = 5.0
 offset_top = 5.0
 offset_right = -5.0
 offset_bottom = -5.0
+grow_horizontal = 2
+grow_vertical = 2
 text = "Tooltip text"
 autowrap_mode = 3

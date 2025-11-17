@@ -9,7 +9,7 @@ public partial class GameState : Node
     public int PlayerHealth { get; private set; } = 10;
     public int MaxPlayerHealth { get; private set; } = 10;
     // No global player strength; move strength is tracked per MoveData
-    public int PlayerGold { get; private set; } = 500;
+    public int PlayerGold { get; private set; } = 5;
 
     // Game over tracking
     public string LastKillerName { get; set; } = "";
@@ -36,7 +36,7 @@ public partial class GameState : Node
         Instance = this;
 
         // Load and instantiate the persistent UI scene
-        var uiScene = ResourceLoader.Load<PackedScene>("res://Scenes/PersistentUI.tscn");
+        var uiScene = ResourceLoader.Load<PackedScene>("res://Scenes/UI/PersistentUI.tscn");
         if (uiScene != null)
         {
             persistentUI = uiScene.Instantiate<PersistentUI>();
@@ -67,6 +67,8 @@ public partial class GameState : Node
     public void AddGold(int amount)
     {
         PlayerGold += amount;
+        // Clamp gold to minimum of 0 (can't go negative)
+        PlayerGold = Mathf.Max(0, PlayerGold);
         UpdateUI();
     }
 

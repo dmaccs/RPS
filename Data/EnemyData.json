@@ -1,5 +1,6 @@
 {
   "RockEnemy": {
+    "displayName": "Brock",
     "health": 3,
     "strength": 1,
     "throwsPerTurn": 1,
@@ -7,6 +8,7 @@
     "frequencies": [80, 10, 10]
   },
   "PaperEnemy": {
+    "displayName": "Brock",
     "health": 3,
     "strength": 1,
     "throwsPerTurn": 1,
@@ -14,14 +16,15 @@
     "frequencies": [10, 80, 10]
   },
   "ScissorsEnemy": {
+    "displayName": "Brock",
     "health": 3,
     "strength": 1,
     "throwsPerTurn": 1,
     "allowedThrows": ["rock", "paper", "scissors"],
     "frequencies": [10, 10, 80]
-  }
-  ,
+  },
   "RandomEnemy": {
+    "displayName": "Randy",
     "health": 4,
     "strength": 1,
     "throwsPerTurn": 1,
@@ -29,6 +32,7 @@
     "behavior": "random"
   },
   "CopycatEnemy": {
+    "displayName": "Jay",
     "health": 4,
     "strength": 1,
     "throwsPerTurn": 1,
@@ -36,6 +40,7 @@
     "behavior": "copy_last"
   },
   "CounterEnemy": {
+    "displayName": "Nerd",
     "health": 5,
     "strength": 1,
     "throwsPerTurn": 1,
@@ -43,11 +48,21 @@
     "behavior": "counter_most_common"
   },
   "BossEnemy": {
+    "displayName": "GigaChad",
     "health": 15,
     "strength": 3,
     "throwsPerTurn": 2,
     "allowedThrows": ["rock", "paper", "scissors"],
     "behavior": "random",
     "isBoss": true
+  },
+  "StubbornEnemy": {
+    "displayName": "Hungrybox (I'm stalling)",
+    "health": 10,
+    "strength": 1,
+    "throwsPerTurn": 1,
+    "allowedThrows": ["rock", "paper", "scissors"],
+    "behavior": "random",
+    "gainsStrengthOnDraw": true
   }
 }

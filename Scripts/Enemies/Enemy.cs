@@ -54,10 +54,10 @@ public partial class Enemy : Node2D
         }
         if (lbl != null)
         {
-            lbl.Text = id;
+            lbl.Text = enemyData?.displayName ?? id;
         }
 
-        GD.Print($"Enemy initialized: {id} (display name: {id})");
+        GD.Print($"Enemy initialized: {id} (display name: {enemyData?.displayName ?? id})");
     }
 
     public void TakeDamage(int dmg)
@@ -74,6 +74,24 @@ public partial class Enemy : Node2D
     {
         if(healthLabel != null){
             healthLabel.Text = "Health: " + health.ToString();
+        }
+    }
+
+    public void RefreshStrengthLabel()
+    {
+        if(strengthLabel != null){
+            strengthLabel.Text = "Strength: " + strength.ToString();
+        }
+    }
+
+    public void OnDraw()
+    {
+        // Check if this enemy gains strength on draws
+        if (enemyData?.gainsStrengthOnDraw ?? false)
+        {
+            strength += 1;
+            RefreshStrengthLabel();
+            GD.Print($"{id} gained strength from draw! New strength: {strength}");
         }
     }
 
@@ -103,7 +121,12 @@ public partial class Enemy : Node2D
         // default
         return Throws.rock;
     }
-    
+
+    public string GetDisplayName()
+    {
+        return enemyData?.displayName ?? id ?? "Unknown Enemy";
+    }
+
     public void OnBattleResult()
     {
         GD.Print("Battle over");//TODO: make this actually do things

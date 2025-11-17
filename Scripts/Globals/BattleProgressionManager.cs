@@ -7,7 +7,7 @@ public partial class BattleProgressionManager : Node
     public static BattleProgressionManager Instance { get; private set; }
 
     private BattleProgressionData progressionData;
-    private int currentBattleNumber = 0; // 0-indexed, increments before each battle
+    private int currentStage = 0; // Stage number, increments before each battle
 
     public override void _Ready()
     {
@@ -40,16 +40,31 @@ public partial class BattleProgressionManager : Node
         }
     }
 
-    public void IncrementBattle()
+    public void IncrementStage()
     {
-        currentBattleNumber++;
-        GD.Print($"Battle number incremented to: {currentBattleNumber}");
+        currentStage++;
+        GD.Print($"Stage incremented to: {currentStage} (Group {GetCurrentGroup()})");
     }
 
     public void ResetBattles()
     {
-        currentBattleNumber = 0;
+        currentStage = 0;
         GD.Print("Battle progression reset");
+    }
+
+    public int GetCurrentStage()
+    {
+        return currentStage;
+    }
+
+    public int GetCurrentGroup()
+    {
+        // Calculate group as ceiling of stage / 3
+        // Stages 1-3 = Group 1, 4-6 = Group 2, etc.
+        // Clamp to max group 5
+        if (currentStage == 0) return 1;
+        int group = (int)Godot.Mathf.Ceil(currentStage / 3.0f);
+        return Godot.Mathf.Min(group, 5);
     }
 
     public string GetEnemyForCurrentBattle()
@@ -60,13 +75,14 @@ public partial class BattleProgressionManager : Node
             return "RandomEnemy";
         }
 
-        // Find the battle configuration for current battle number
-        // If battleNumber exceeds defined battles, use the last battle's pool
+        int currentGroup = GetCurrentGroup();
+
+        // Find the battle configuration for current group
         BattleConfig config = null;
 
         for (int i = 0; i < progressionData.Battles.Count; i++)
         {
-            if (progressionData.Battles[i].BattleNumber == currentBattleNumber)
+            if (progressionData.Battles[i].Group == currentGroup)
             {
                 config = progressionData.Battles[i];
                 break;
@@ -77,14 +93,14 @@ public partial class BattleProgressionManager : Node
         if (config == null)
         {
             config = progressionData.Battles[progressionData.Battles.Count - 1];
-            GD.Print($"Battle {currentBattleNumber} not defined, using battle {config.BattleNumber} pool");
+            GD.Print($"Group {currentGroup} not defined, using group {config.Group} pool");
         }
 
         // Select enemy from pool using weights
-        return SelectWeightedEnemy(config);
+        return SelectWeightedEnemy(config, currentGroup);
     }
 
-    private string SelectWeightedEnemy(BattleConfig config)
+    private string SelectWeightedEnemy(BattleConfig config, int group)
     {
         if (config.EnemyPool == null || config.EnemyPool.Count == 0)
         {
@@ -114,18 +130,13 @@ public partial class BattleProgressionManager : Node
             cumulative += config.Weights[i];
             if (randomValue <= cumulative)
             {
-                GD.Print($"Selected {config.EnemyPool[i]} for battle {currentBattleNumber}");
+                GD.Print($"Selected {config.EnemyPool[i]} for stage {currentStage} (group {group})");
                 return config.EnemyPool[i];
             }
         }
 
         // Fallback (should never reach here)
         return config.EnemyPool[0];
-    }
-
-    public int GetCurrentBattleNumber()
-    {
-        return currentBattleNumber;
     }
 }
 
@@ -137,7 +148,7 @@ public class BattleProgressionData
 
 public class BattleConfig
 {
-    public int BattleNumber { get; set; }
+    public int Group { get; set; }
     public List<string> EnemyPool { get; set; }
     public List<int> Weights { get; set; }
 }

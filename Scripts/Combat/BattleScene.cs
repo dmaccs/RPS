@@ -64,11 +64,11 @@ public partial class BattleScene : Control
 			// Store killer info in GameState
 			if (GameState.Instance != null && currentEnemy != null)
 			{
-				GameState.Instance.LastKillerName = currentEnemy.id ?? "Unknown Enemy";
+				GameState.Instance.LastKillerName = currentEnemy.GetDisplayName();
 				GameState.Instance.LastScore = 100; // Placeholder score for now
 			}
 			// Transition to lose scene
-			GetTree().CallDeferred("change_scene_to_file", "res://Scenes/LoseScene.tscn");
+			GetTree().CallDeferred("change_scene_to_file", "res://Scenes/Transitions/LoseScene.tscn");
 		}
 	}
 

@@ -371,7 +371,7 @@ public partial class PersistentUI : CanvasLayer
         // Calculate tooltip size based on text
         // Set a reasonable max width
         const int maxWidth = 250;
-        const int padding = 10;
+        //const int padding = 10;
 
         // Position tooltip offset from mouse
         var offsetX = 15;

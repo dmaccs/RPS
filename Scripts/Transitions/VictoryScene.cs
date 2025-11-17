@@ -12,7 +12,7 @@ public partial class VictoryScene : Control
 	private void OnMainMenuPressed()
 	{
 		GD.Print("Returning to Main Menu");
-		GetTree().ChangeSceneToFile("res://Scenes/MainMenuScene.tscn");
+		GetTree().ChangeSceneToFile("res://Scenes/Transitions/MainMenuScene.tscn");
 	}
 
 	public override void _ExitTree()

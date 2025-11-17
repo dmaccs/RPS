@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://bjdtd3ih7hfis"]
 
 [ext_resource type="Texture2D" uid="uid://w8acd12873bn" path="res://art/GameOver.png" id="1_3xaia"]
-[ext_resource type="Script" uid="uid://dcblb3bnj6ev1" path="res://Scripts/VictoryScene.cs" id="1_c20pg"]
+[ext_resource type="Script" uid="uid://dcblb3bnj6ev1" path="res://Scripts/Transitions/VictoryScene.cs" id="1_c20pg"]
 
 [node name="VictoryScene" type="Control"]
 layout_mode = 3
@@ -25,12 +25,22 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -57.5
-offset_top = -15.5
-offset_right = 57.5
-offset_bottom = 15.5
+offset_left = -100.0
+offset_top = 23.0
+offset_right = 100.0
+offset_bottom = 142.0
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="Label" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "YOU WIN!"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Spacer" type="Control" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
 
 [node name="Button" type="Button" parent="VBoxContainer"]
 layout_mode = 2

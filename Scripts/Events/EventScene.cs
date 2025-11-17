@@ -86,12 +86,40 @@ public partial class EventScene : Control
         optionButtons.Clear();
         buttonHandlers.Clear();
 
+        int playerGold = GameState.Instance?.PlayerGold ?? 0;
+
         // Create a button for each option
         for (int i = 0; i < currentEvent.Options.Count; i++)
         {
             var option = currentEvent.Options[i];
             var button = new Button();
             button.Text = option.Text;
+
+            // Check if option has gold cost player can't afford
+            bool canAfford = true;
+            if (option.Outcomes != null)
+            {
+                foreach (var outcome in option.Outcomes)
+                {
+                    // Check for direct gold costs (negative gold amounts)
+                    if (outcome.Type == "add_gold" && outcome.Amount < 0)
+                    {
+                        int cost = Math.Abs(outcome.Amount);
+                        if (cost > playerGold)
+                        {
+                            canAfford = false;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Disable button if player can't afford it
+            if (!canAfford)
+            {
+                button.Disabled = true;
+                button.Text += " (Not enough gold)";
+            }
 
             // Capture index for lambda
             int optionIndex = i;
@@ -144,6 +172,21 @@ public partial class EventScene : Control
 
         // Refresh UI to show updated stats
         GameState.Instance.RefreshUI();
+
+        // Check if player died from the event
+        if (player.IsDead())
+        {
+            GD.Print("Player died from event!");
+            // Store killer info
+            if (GameState.Instance != null)
+            {
+                GameState.Instance.LastKillerName = currentEvent.Title ?? "A fateful choice";
+                GameState.Instance.LastScore = 100; // Placeholder score
+            }
+            // Transition to lose scene
+            GetTree().CallDeferred("change_scene_to_file", "res://Scenes/Transitions/LoseScene.tscn");
+            return;
+        }
 
         // Show result
         DisplayResult(resultTexts);

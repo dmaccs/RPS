@@ -1,24 +1,29 @@
 {
   "battles": [
     {
-      "battleNumber": 1,
+      "group": 1,
       "enemyPool": ["RockEnemy", "PaperEnemy", "ScissorsEnemy"],
       "weights": [33, 33, 34]
     },
     {
-      "battleNumber": 2,
-      "enemyPool": ["RockEnemy", "PaperEnemy", "ScissorsEnemy", "RandomEnemy", "CopycatEnemy"],
+      "group": 2,
+      "enemyPool": ["RockEnemy", "PaperEnemy", "ScissorsEnemy", "CopycatEnemy", "RandomEnemy"],
       "weights": [20, 20, 20, 20, 20]
     },
     {
-      "battleNumber": 3,
-      "enemyPool": ["RandomEnemy", "CopycatEnemy", "CounterEnemy"],
-      "weights": [40, 40, 20]
+      "group": 3,
+      "enemyPool": ["CopycatEnemy", "RandomEnemy", "StubbornEnemy", "CounterEnemy"],
+      "weights": [20, 30, 25, 25]
     },
     {
-      "battleNumber": 4,
-      "enemyPool": ["CopycatEnemy", "CounterEnemy"],
-      "weights": [30, 70]
+      "group": 4,
+      "enemyPool": ["StubbornEnemy", "RandomEnemy", "CounterEnemy"],
+      "weights": [25, 35, 40]
+    },
+    {
+      "group": 5,
+      "enemyPool": ["RandomEnemy", "CounterEnemy"],
+      "weights": [45, 55]
     }
   ]
 }
