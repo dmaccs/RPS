@@ -1,0 +1,190 @@
+{
+  "treasure_chest": {
+    "Id": "treasure_chest",
+    "Stage": 1,
+    "Title": "Treasure Chest",
+    "Description": "You discover an unlocked treasure chest in the corner of the room. Its contents shimmer in the dim light.",
+    "Rarity": "Common",
+    "ColorHex": "#808080",
+    "Options": [
+      {
+        "Text": "Take the gold (+20 Gold)",
+        "Outcomes": [
+          {
+            "Type": "add_gold",
+            "Amount": 20
+          }
+        ]
+      },
+      {
+        "Text": "Take the potion (Gain Health Potion)",
+        "Outcomes": [
+          {
+            "Type": "add_item",
+            "ItemId": "health_potion"
+          }
+        ]
+      }
+    ]
+  },
+  "strange_altar": {
+    "Id": "strange_altar",
+    "Stage": 1,
+    "Title": "Strange Altar",
+    "Description": "A dark altar emanates power. An inscription reads: 'Sacrifice blood for strength, or offer gold for knowledge.'",
+    "Rarity": "Uncommon",
+    "ColorHex": "#4169E1",
+    "Options": [
+      {
+        "Text": "Sacrifice blood (-8 HP, +1 to all moves)",
+        "Outcomes": [
+          {
+            "Type": "modify_health",
+            "Amount": -8
+          },
+          {
+            "Type": "upgrade_all_moves",
+            "Amount": 1
+          }
+        ]
+      },
+      {
+        "Text": "Offer gold (-30 Gold, Gain Power Stone relic)",
+        "Outcomes": [
+          {
+            "Type": "add_gold",
+            "Amount": -30
+          },
+          {
+            "Type": "add_relic",
+            "ItemId": "power_stone"
+          }
+        ]
+      },
+      {
+        "Text": "Leave it alone",
+        "Outcomes": []
+      }
+    ]
+  },
+  "wandering_merchant": {
+    "Id": "wandering_merchant",
+    "Stage": 1,
+    "Title": "Wandering Merchant",
+    "Description": "A friendly merchant offers you a choice of wares at discounted prices.",
+    "Rarity": "Common",
+    "ColorHex": "#808080",
+    "Options": [
+      {
+        "Text": "Buy upgrade (+1 Rock)",
+        "Outcomes": [
+          {
+            "Type": "upgrade_move",
+            "TargetMove": "rock",
+            "Amount": 1
+          }
+        ]
+      },
+      {
+        "Text": "Buy upgrade (+1 Paper)",
+        "Outcomes": [
+          {
+            "Type": "upgrade_move",
+            "TargetMove": "paper",
+            "Amount": 1
+          }
+        ]
+      },
+      {
+        "Text": "Buy upgrade (+1 Scissors)",
+        "Outcomes": [
+          {
+            "Type": "upgrade_move",
+            "TargetMove": "scissors",
+            "Amount": 1
+          }
+        ]
+      },
+      {
+        "Text": "No thanks",
+        "Outcomes": []
+      }
+    ]
+  },
+  "mysterious_fountain": {
+    "Id": "mysterious_fountain",
+    "Stage": 1,
+    "Title": "Mysterious Fountain",
+    "Description": "A magical fountain bubbles with strange liquid. A sign warns: 'Drink at your own risk - fortune favors the bold!'",
+    "Rarity": "Uncommon",
+    "ColorHex": "#4169E1",
+    "Options": [
+      {
+        "Text": "Drink from the fountain (50% chance: +30 Gold OR -10 HP)",
+        "Outcomes": [
+          {
+            "Type": "random_outcome",
+            "SuccessRate": 50,
+            "SuccessOutcomes": [
+              {
+                "Type": "add_gold",
+                "Amount": 30
+              }
+            ],
+            "FailureOutcomes": [
+              {
+                "Type": "modify_health",
+                "Amount": -10
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "Text": "Walk away safely",
+        "Outcomes": []
+      }
+    ]
+  },
+  "ancient_library": {
+    "Id": "ancient_library",
+    "Stage": 1,
+    "Title": "Ancient Library",
+    "Description": "You find a library filled with ancient tomes. One book glows with power, but reading it will drain your vitality.",
+    "Rarity": "Rare",
+    "ColorHex": "#FFD700",
+    "Options": [
+      {
+        "Text": "Read the tome (-5 Max HP, +2 to all moves)",
+        "Outcomes": [
+          {
+            "Type": "modify_max_health",
+            "Amount": -5
+          },
+          {
+            "Type": "upgrade_all_moves",
+            "Amount": 2
+          }
+        ]
+      },
+      {
+        "Text": "Study healing scrolls (+10 HP)",
+        "Outcomes": [
+          {
+            "Type": "modify_health",
+            "Amount": 10
+          }
+        ]
+      },
+      {
+        "Text": "Search for treasure (+15 Gold)",
+        "Outcomes": [
+          {
+            "Type": "add_gold",
+            "Amount": 15
+          }
+        ]
+      }
+    ]
+  }
+}

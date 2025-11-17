@@ -9,6 +9,8 @@ public partial class Shop : Control
 	{
 		public Button Button;
 		public Label CostLabel;
+		public Label ErrorLabel;
+		public Timer ErrorTimer;
 		public ItemData ItemData;
 	}
 
@@ -23,8 +25,22 @@ public partial class Shop : Control
 			var slot = new ShopSlot
 			{
 				Button = GetNode<Button>($"VBoxContainer/HBoxContainer{i}/Button"),
-				CostLabel = GetNode<Label>($"VBoxContainer/HBoxContainer{i}/Label")
+				CostLabel = GetNode<Label>($"VBoxContainer/HBoxContainer{i}/Label"),
+				ErrorLabel = GetNode<Label>($"VBoxContainer/HBoxContainer{i}/ErrorLabel"),
+				ErrorTimer = new Timer()
 			};
+
+			// Setup timer for this slot
+			slot.ErrorTimer.WaitTime = 2.0; // Show error for 2 seconds
+			slot.ErrorTimer.OneShot = true;
+			int slotIndex = i - 1; // Capture for lambda
+			slot.ErrorTimer.Timeout += () => {
+				var s = shopSlots[slotIndex];
+				s.ErrorLabel.Visible = false;
+				shopSlots[slotIndex] = s;
+			};
+			AddChild(slot.ErrorTimer);
+
 			shopSlots.Add(slot);
 		}
 
@@ -44,8 +60,20 @@ public partial class Shop : Control
 
 	private void PopulateShop()
 	{
-		// Get all items from database
-		var allItems = ItemDatabase.Instance.GetAllItems();
+		// Get all consumables and unseen relics
+		var allConsumables = ItemDatabase.Instance.GetAllConsumables();
+		var unseenRelics = ItemDatabase.Instance.GetUnseenRelics();
+
+		// If all relics have been seen, include all relics again
+		if (unseenRelics.Count == 0)
+		{
+			unseenRelics = ItemDatabase.Instance.GetAllRelics();
+		}
+
+		// Combine into one list
+		var allItems = new List<ItemData>();
+		allItems.AddRange(allConsumables);
+		allItems.AddRange(unseenRelics);
 
 		if (allItems.Count == 0)
 		{
@@ -64,6 +92,12 @@ public partial class Shop : Control
 			slot.Button.Text = selectedItems[i].Name;
 			slot.CostLabel.Text = $"{selectedItems[i].Cost}g";
 			shopSlots[i] = slot;
+
+			// Mark relics as seen when they appear in shop
+			if (ItemDatabase.Instance.GetItemCategory(selectedItems[i].Id) == ItemCategory.Relic)
+			{
+				GameState.Instance.MarkRelicAsSeen(selectedItems[i].Id);
+			}
 		}
 	}
 
@@ -126,18 +160,24 @@ public partial class Shop : Control
 		if (GameState.Instance.PlayerGold < slot.ItemData.Cost)
 		{
 			GD.Print("Not enough gold!");
-			// TODO: Show feedback to player
+			ShowErrorMessage(slotIndex);
 			return;
 		}
-
-		// Deduct gold
-		GameState.Instance.AddGold(-slot.ItemData.Cost);
 
 		// Add item to inventory based on type
 		var category = ItemDatabase.Instance.GetItemCategory(slot.ItemData.Id);
 		if (category == ItemCategory.Consumable)
 		{
-			GameState.Instance.AddItem(slot.ItemData.Id);
+			// Check if inventory has space
+			if (!GameState.Instance.AddItem(slot.ItemData.Id))
+			{
+				GD.Print("Inventory full!");
+				ShowErrorMessage(slotIndex, "Inventory full!");
+				return;
+			}
+
+			// Deduct gold after successful addition
+			GameState.Instance.AddGold(-slot.ItemData.Cost);
 			GD.Print($"Purchased consumable: {slot.ItemData.Name}");
 		}
 		else if (category == ItemCategory.Relic)
@@ -152,12 +192,26 @@ public partial class Shop : Control
 				effect?.Apply(GameManager.Instance.Player, null, relic.Effect);
 			}
 
+			// Deduct gold after successful addition
+			GameState.Instance.AddGold(-slot.ItemData.Cost);
 			GD.Print($"Purchased relic: {slot.ItemData.Name}");
 		}
 
 		// Disable button after purchase
 		slot.Button.Disabled = true;
 		slot.Button.Text = "[SOLD]";
+	}
+
+	private void ShowErrorMessage(int slotIndex, string message = "Not enough gold!")
+	{
+		if (slotIndex < 0 || slotIndex >= shopSlots.Count)
+			return;
+
+		var slot = shopSlots[slotIndex];
+		slot.ErrorLabel.Text = message;
+		slot.ErrorLabel.Visible = true;
+		slot.ErrorTimer.Start();
+		shopSlots[slotIndex] = slot;
 	}
 
 	private void OnExitPressed()
@@ -172,6 +226,16 @@ public partial class Shop : Control
 		if (exitButton != null)
 		{
 			exitButton.Pressed -= OnExitPressed;
+		}
+
+		// Clean up error timers
+		foreach (var slot in shopSlots)
+		{
+			if (slot.ErrorTimer != null && IsInstanceValid(slot.ErrorTimer))
+			{
+				slot.ErrorTimer.Stop();
+				slot.ErrorTimer.QueueFree();
+			}
 		}
 
 		// Note: We can't easily disconnect lambda signals, but the buttons will be freed anyway

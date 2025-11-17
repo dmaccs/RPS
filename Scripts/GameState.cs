@@ -9,7 +9,7 @@ public partial class GameState : Node
     public int PlayerHealth { get; private set; } = 10;
     public int MaxPlayerHealth { get; private set; } = 10;
     // No global player strength; move strength is tracked per MoveData
-    public int PlayerGold { get; private set; } = 50;
+    public int PlayerGold { get; private set; } = 500;
 
     // Game over tracking
     public string LastKillerName { get; set; } = "";
@@ -18,6 +18,9 @@ public partial class GameState : Node
     // Inventory
     private List<string> items = new();
     private List<string> relics = new();
+
+    // Track which relics have been seen this run (to prevent duplicates)
+    private HashSet<string> seenRelics = new();
 
     // Buff system
     // Temporary buffs (buff_type -> (amount, turns_remaining))
@@ -68,10 +71,18 @@ public partial class GameState : Node
     }
 
     // Inventory management
-    public void AddItem(string itemId)
+    public bool AddItem(string itemId)
     {
+        // Maximum 3 items allowed in inventory
+        if (items.Count >= 3)
+        {
+            GD.Print($"Inventory full! Cannot add {itemId}");
+            return false;
+        }
+
         items.Add(itemId);
         UpdateUI();
+        return true;
     }
 
     public void RemoveItem(string itemId)
@@ -83,7 +94,24 @@ public partial class GameState : Node
     public void AddRelic(string relicId)
     {
         relics.Add(relicId);
+        MarkRelicAsSeen(relicId);
         UpdateUI();
+    }
+
+    // Relic tracking methods
+    public void MarkRelicAsSeen(string relicId)
+    {
+        seenRelics.Add(relicId);
+    }
+
+    public bool HasSeenRelic(string relicId)
+    {
+        return seenRelics.Contains(relicId);
+    }
+
+    public HashSet<string> GetSeenRelics()
+    {
+        return new HashSet<string>(seenRelics);
     }
 
     public bool HasItem(string itemId)
@@ -199,6 +227,7 @@ public partial class GameState : Node
         PlayerGold = 50;
         items.Clear();
         relics.Clear();
+        seenRelics.Clear();
         temporaryBuffs.Clear();
         permanentBuffs.Clear();
         LastKillerName = "";

@@ -24,14 +24,22 @@ public partial class GameManager : Node
             "res://Scenes/BattleScene.tscn",
             "res://Scenes/Rewards.tscn",
             "res://Scenes/ShopScene.tscn",
-            "res://Scenes/BattleScene.tscn",
-            "res://Scenes/Rewards.tscn",
-            "res://Scenes/BattleScene.tscn",
-            "res://Scenes/Rewards.tscn",
-            "res://Scenes/RestScene.tscn",
-            "res://Scenes/BossScene.tscn",
-            "res://Scenes/VictoryScene.tscn",
-            //"res://Scenes/BossScene.tscn"
+            "res://Scenes/ShopScene.tscn",
+            "res://Scenes/EventScene.tscn",
+            "res://Scenes/EventScene.tscn",
+            "res://Scenes/EventScene.tscn",
+            "res://Scenes/EventScene.tscn",
+            "res://Scenes/EventScene.tscn",
+            "res://Scenes/EventScene.tscn",
+            "res://Scenes/EventScene.tscn",
+             "res://Scenes/BattleScene.tscn",
+             "res://Scenes/Rewards.tscn",
+             "res://Scenes/BattleScene.tscn",
+             "res://Scenes/Rewards.tscn",
+             "res://Scenes/RestScene.tscn",
+             "res://Scenes/BossScene.tscn",
+             "res://Scenes/VictoryScene.tscn",
+            "res://Scenes/BossScene.tscn"
         };
 
         LoadNextScene();

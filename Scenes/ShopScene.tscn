@@ -31,6 +31,12 @@ text = "Item 1 Cost"
 layout_mode = 2
 text = "Item Name"
 
+[node name="ErrorLabel" type="Label" parent="VBoxContainer/HBoxContainer1"]
+visible = false
+layout_mode = 2
+text = "Not enough gold!"
+modulate = Color(1, 0.3, 0.3, 1)
+
 [node name="HBoxContainer2" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
 
@@ -41,6 +47,12 @@ text = "Item 2 Cost"
 [node name="Button" type="Button" parent="VBoxContainer/HBoxContainer2"]
 layout_mode = 2
 text = "Item Name"
+
+[node name="ErrorLabel" type="Label" parent="VBoxContainer/HBoxContainer2"]
+visible = false
+layout_mode = 2
+text = "Not enough gold!"
+modulate = Color(1, 0.3, 0.3, 1)
 
 [node name="HBoxContainer3" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
@@ -53,6 +65,12 @@ text = "Item 3 Cost"
 layout_mode = 2
 text = "Item Name"
 
+[node name="ErrorLabel" type="Label" parent="VBoxContainer/HBoxContainer3"]
+visible = false
+layout_mode = 2
+text = "Not enough gold!"
+modulate = Color(1, 0.3, 0.3, 1)
+
 [node name="HBoxContainer4" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
 
@@ -63,6 +81,12 @@ text = "Item 4 Cost"
 [node name="Button" type="Button" parent="VBoxContainer/HBoxContainer4"]
 layout_mode = 2
 text = "Item Name"
+
+[node name="ErrorLabel" type="Label" parent="VBoxContainer/HBoxContainer4"]
+visible = false
+layout_mode = 2
+text = "Not enough gold!"
+modulate = Color(1, 0.3, 0.3, 1)
 
 [node name="HBoxContainer5" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
@@ -75,6 +99,12 @@ text = "Item 5 Cost"
 layout_mode = 2
 text = "Item Name"
 
+[node name="ErrorLabel" type="Label" parent="VBoxContainer/HBoxContainer5"]
+visible = false
+layout_mode = 2
+text = "Not enough gold!"
+modulate = Color(1, 0.3, 0.3, 1)
+
 [node name="HBoxContainer6" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
 
@@ -85,6 +115,12 @@ text = "Item 6 Cost"
 [node name="Button" type="Button" parent="VBoxContainer/HBoxContainer6"]
 layout_mode = 2
 text = "Item Name"
+
+[node name="ErrorLabel" type="Label" parent="VBoxContainer/HBoxContainer6"]
+visible = false
+layout_mode = 2
+text = "Not enough gold!"
+modulate = Color(1, 0.3, 0.3, 1)
 
 [node name="Button" type="Button" parent="VBoxContainer"]
 layout_mode = 2

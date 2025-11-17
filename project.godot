@@ -23,6 +23,7 @@ EnemyDatabase="*res://EnemyDatabase.cs"
 RngManager="*res://Scripts/RngManager.cs"
 GameState="*res://Scripts/GameState.cs"
 ItemDatabase="*res://Scripts/ItemDatabase.cs"
+EventDatabase="*res://Scripts/EventDatabase.cs"
 
 [dotnet]
 

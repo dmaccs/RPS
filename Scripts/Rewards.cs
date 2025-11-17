@@ -59,9 +59,32 @@ public partial class Rewards : Control
         button2.Text = GetRandomRewardDescription();
         skipButton.Text = "Skip";
 
+        // Update button states based on inventory
+        UpdateRewardButtonStates();
+
         button1.Pressed += OnUpgradeChosen;
         button2.Pressed += OnRandomRewardChosen;
         skipButton.Pressed += OnSkipChosen;
+    }
+
+    public override void _Process(double delta)
+    {
+        // Update button states each frame to react to inventory changes
+        UpdateRewardButtonStates();
+    }
+
+    private void UpdateRewardButtonStates()
+    {
+        // Check if random reward is an item and inventory is full
+        if (randomRewardType == RewardType.Item)
+        {
+            bool inventoryFull = GameState.Instance.GetItems().Count >= 3;
+            button2.Disabled = inventoryFull;
+
+            // Update button text to show inventory status
+            string baseText = GetRandomRewardDescription();
+            button2.Text = inventoryFull ? baseText + " (Inventory Full)" : baseText;
+        }
     }
 
     private void UpdateThrowButtons()
@@ -138,8 +161,14 @@ public partial class Rewards : Control
         else if (roll <= 95) // 10% - Relic
         {
             randomRewardType = RewardType.Relic;
-            var uncommonRelics = ItemDatabase.Instance.GetRelicsByRarity(ItemRarity.Uncommon);
-            var rareRelics = ItemDatabase.Instance.GetRelicsByRarity(ItemRarity.Rare);
+            var uncommonRelics = ItemDatabase.Instance.GetUnseenRelicsByRarity(ItemRarity.Uncommon);
+            var rareRelics = ItemDatabase.Instance.GetUnseenRelicsByRarity(ItemRarity.Rare);
+
+            // If all relics of a rarity have been seen, use all relics of that rarity
+            if (uncommonRelics.Count == 0)
+                uncommonRelics = ItemDatabase.Instance.GetRelicsByRarity(ItemRarity.Uncommon);
+            if (rareRelics.Count == 0)
+                rareRelics = ItemDatabase.Instance.GetRelicsByRarity(ItemRarity.Rare);
 
             // 60% uncommon, 40% rare
             List<RelicData> relicPool;
@@ -152,6 +181,9 @@ public partial class Rewards : Control
             {
                 int index = RngManager.Instance.Rng.RandiRange(0, relicPool.Count - 1);
                 randomRewardData = relicPool[index];
+
+                // Mark relic as seen when it appears as a reward option
+                GameState.Instance.MarkRelicAsSeen(relicPool[index].Id);
             }
         }
         else // 5% - Max Health
@@ -195,7 +227,12 @@ public partial class Rewards : Control
                 var item = randomRewardData as ConsumableItemData;
                 if (item != null)
                 {
-                    GameState.Instance.AddItem(item.Id);
+                    // Safety check - shouldn't happen since button is disabled when full
+                    if (!GameState.Instance.AddItem(item.Id))
+                    {
+                        GD.PrintErr("Failed to add item - inventory full!");
+                        return;
+                    }
                     GD.Print($"Player received item: {item.Name}");
                 }
                 break;

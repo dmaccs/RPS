@@ -124,6 +124,24 @@ public partial class ItemDatabase : Node
     {
         return relics.Values.Where(item => item.Rarity == rarity).ToList();
     }
+
+    // Get relics by rarity that haven't been seen yet this run
+    public List<RelicData> GetUnseenRelicsByRarity(ItemRarity rarity)
+    {
+        var seenRelics = GameState.Instance.GetSeenRelics();
+        return relics.Values
+            .Where(relic => relic.Rarity == rarity && !seenRelics.Contains(relic.Id))
+            .ToList();
+    }
+
+    // Get all unseen relics
+    public List<RelicData> GetUnseenRelics()
+    {
+        var seenRelics = GameState.Instance.GetSeenRelics();
+        return relics.Values
+            .Where(relic => !seenRelics.Contains(relic.Id))
+            .ToList();
+    }
 }
 
 // Helper class for JSON deserialization

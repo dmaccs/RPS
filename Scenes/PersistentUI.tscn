@@ -50,19 +50,60 @@ offset_top = 15.687999
 offset_right = 505.49597
 offset_bottom = -73.26401
 
-[node name="ItemList" type="ItemList" parent="Inventory"]
-layout_mode = 0
-offset_left = 54.0
-offset_top = -3.0
-offset_right = 173.0
-offset_bottom = 37.0
-allow_rmb_select = true
-
 [node name="ItemLabel" type="Label" parent="Inventory"]
 layout_mode = 0
 offset_right = 40.0
 offset_bottom = 23.0
 text = "Items:"
+
+[node name="ItemSlots" type="HBoxContainer" parent="Inventory"]
+layout_mode = 0
+offset_left = 0.0
+offset_top = 25.0
+offset_right = 260.0
+offset_bottom = 85.0
+
+[node name="Slot1" type="Panel" parent="Inventory/ItemSlots"]
+custom_minimum_size = Vector2(80, 60)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Inventory/ItemSlots/Slot1"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+text = "Empty"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="Slot2" type="Panel" parent="Inventory/ItemSlots"]
+custom_minimum_size = Vector2(80, 60)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Inventory/ItemSlots/Slot2"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+text = "Empty"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="Slot3" type="Panel" parent="Inventory/ItemSlots"]
+custom_minimum_size = Vector2(80, 60)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Inventory/ItemSlots/Slot3"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+text = "Empty"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
 
 [node name="Relics" type="Control" parent="."]
 layout_mode = 3
@@ -76,14 +117,34 @@ offset_right = 782.95996
 offset_bottom = 3.847992
 
 [node name="RelicList" type="ItemList" parent="Relics"]
+custom_minimum_size = Vector2(150, 120)
 layout_mode = 0
 offset_left = 52.0
 offset_top = -5.0
-offset_right = 219.0
-offset_bottom = 35.0
+offset_right = 202.0
+offset_bottom = 115.0
+max_columns = 1
 
 [node name="RelilcsLabel" type="Label" parent="Relics"]
 layout_mode = 0
 offset_right = 40.0
 offset_bottom = 23.0
 text = "Relics:"
+
+[node name="Tooltip" type="Panel" parent="."]
+visible = false
+layout_mode = 0
+offset_right = 200.0
+offset_bottom = 50.0
+
+[node name="TooltipLabel" type="Label" parent="Tooltip"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 5.0
+offset_top = 5.0
+offset_right = -5.0
+offset_bottom = -5.0
+text = "Tooltip text"
+autowrap_mode = 3
