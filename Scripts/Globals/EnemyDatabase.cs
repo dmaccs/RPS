@@ -16,7 +16,7 @@ public partial class EnemyDatabase : Node
 
     private void LoadData()
     {
-        string path = "res://data/EnemyData.json";
+        string path = "res://Data/EnemyData.json";
 
         // Ensure file exists
         if (!FileAccess.FileExists(path)){
