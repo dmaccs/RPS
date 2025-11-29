@@ -6,7 +6,7 @@ public partial class GameManager : Node
 {
 
 	public Player Player { get; private set; } = new Player();
-
+    public bool IsTesting = true;
 	public static GameManager Instance { get; private set; }
 	private int stageIndex = 0;
 	public int StageIndex => stageIndex; // Public read-only access to stageIndex

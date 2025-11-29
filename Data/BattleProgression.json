@@ -1,6 +1,11 @@
 {
   "battles": [
     {
+      "group": 0,
+      "enemyPool": ["OddOneOutEnemy", "MomentumEnemy"],
+      "weights": [50, 50]
+    },
+    {
       "group": 1,
       "enemyPool": ["RockEnemy", "PaperEnemy", "ScissorsEnemy"],
       "weights": [33, 33, 34]

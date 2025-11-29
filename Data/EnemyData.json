@@ -23,6 +23,22 @@
 	"allowedThrows": ["rock", "paper", "scissors"],
 	"frequencies": [10, 10, 80]
   },
+  "OddOneOutEnemy": {
+	"displayName": "Todd",
+	"health": 3,
+	"strength": 1,
+	"throwsPerTurn": 1,
+	"allowedThrows": ["rock", "paper", "scissors"],
+	"behavior": "not_seen"
+  },
+  "MomentumEnemy": {
+	"displayName": "Mori",
+	"health": 20,
+	"strength": 1,
+	"throwsPerTurn": 1,
+	"allowedThrows": ["rock", "paper", "scissors"],
+	"behavior": "momentum"
+  },
   "RandomEnemy": {
 	"displayName": "Randy",
 	"health": 4,

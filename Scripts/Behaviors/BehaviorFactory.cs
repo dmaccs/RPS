@@ -33,6 +33,10 @@ public static class BehaviorFactory
                 return new CopyLastBehavior(allowed, rng);
             case "counter_most_common":
                 return new CounterMostCommonBehavior(allowed, rng);
+            case "not_seen":
+                return new RPS.Scripts.Behaviors.NotSeenBehavior(allowed, rng);
+            case "momentum":
+                return new RPS.Scripts.Behaviors.MomentumBehavior(allowed, rng);
             default:
                 // default to frequency behavior if frequencies present else random
                 if (data?.frequencies != null && data.frequencies.Count > 0)

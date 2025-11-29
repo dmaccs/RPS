@@ -13,7 +13,9 @@ public class RandomBehavior : IEnemyBehavior
         this.rng = rng ?? new RandomNumberGenerator();
     }
 
-    public Throws ChooseThrow(Throws? previousPlayerThrow, List<Throws> playerHistory)
+    public Throws ChooseThrow(Throws? previousPlayerThrow, List<Throws> playerHistory,
+                              List<List<Throws>> encounterPlayerThrows = null,
+                              List<List<Throws>> encounterEnemyThrows = null)
     {
         if (allowed.Count == 0) return Throws.rock;
         int idx = rng.RandiRange(0, allowed.Count - 1);

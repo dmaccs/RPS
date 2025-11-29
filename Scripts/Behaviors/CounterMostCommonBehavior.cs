@@ -13,7 +13,9 @@ public class CounterMostCommonBehavior : IEnemyBehavior
         this.rng = rng ?? new RandomNumberGenerator();
     }
 
-    public Throws ChooseThrow(Throws? previousPlayerThrow, List<Throws> playerHistory)
+    public Throws ChooseThrow(Throws? previousPlayerThrow, List<Throws> playerHistory,
+                              List<List<Throws>> encounterPlayerThrows = null,
+                              List<List<Throws>> encounterEnemyThrows = null)
     {
         if (playerHistory != null && playerHistory.Count > 0)
         {

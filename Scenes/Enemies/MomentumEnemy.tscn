@@ -1,0 +1,35 @@
+[gd_scene load_steps=3 format=3 uid="uid://dd4ubx1t5qdh4"]
+
+[ext_resource type="Script" uid="uid://cwf5qnmixm5yr" path="res://Scripts/Enemies/Enemy.cs" id="1_y0xr3"]
+[ext_resource type="Texture2D" uid="uid://bcwnp7ayt23s1" path="res://art/QuestionMark.png" id="2_0i00j"]
+
+[node name="Enemy" type="Node2D"]
+script = ExtResource("1_y0xr3")
+
+[node name="Name" type="Label" parent="."]
+offset_left = -71.0
+offset_top = -110.0
+offset_right = 71.0
+offset_bottom = -87.0
+text = "Placeholder Name"
+horizontal_alignment = 1
+
+[node name="Health" type="Label" parent="."]
+offset_left = -42.0
+offset_top = 100.0
+offset_right = 43.0
+offset_bottom = 123.0
+text = "Health: 3"
+horizontal_alignment = 1
+
+[node name="Strength" type="Label" parent="."]
+offset_left = -42.0
+offset_top = 123.0
+offset_right = 43.0
+offset_bottom = 146.0
+text = "Strength: 1"
+horizontal_alignment = 1
+
+[node name="Sprite" type="Sprite2D" parent="."]
+scale = Vector2(3, 3)
+texture = ExtResource("2_0i00j")

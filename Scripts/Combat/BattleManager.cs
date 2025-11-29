@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using Godot;
 using Rps;
+using RPS.Scripts.Behaviors;
 
 public enum RoundOutcome
 {
@@ -22,6 +24,11 @@ public class BattleManager
     private Player player;
     private Enemy enemy;
 
+    // Track throws per round during this encounter
+    // Each round is a list of throws (usually 1, but can be multiple for special abilities)
+    public List<List<Throws>> EncounterPlayerThrows { get; private set; } = new List<List<Throws>>();
+    public List<List<Throws>> EncounterEnemyThrows { get; private set; } = new List<List<Throws>>();
+
     public BattleManager(Player player, Enemy enemy)
     {
         this.player = player;
@@ -41,18 +48,18 @@ public class BattleManager
         };
 
         // Pass player context so smarter enemies can react to player's previous behavior
-        Throws enemyThrow = enemy.ChooseThrow(player.LastThrow, player.ThrowHistory);
+        Throws enemyThrow = enemy.ChooseThrow(player.LastThrow, player.ThrowHistory, EncounterPlayerThrows, EncounterEnemyThrows);
 
         // Boss mechanic: throw twice and pick the best result
         bool isBossDraw = false; // Track if boss's best result is a draw
         if (enemy.isBoss)
         {
-            Throws enemyThrow2 = enemy.ChooseThrow(player.LastThrow, player.ThrowHistory);
+            Throws enemyThrow2 = enemy.ChooseThrow(player.LastThrow, player.ThrowHistory, EncounterPlayerThrows, EncounterEnemyThrows);
             // Ensure the two throws are different
             int attempts = 0;
             while (enemyThrow2 == enemyThrow && attempts < 10)
             {
-                enemyThrow2 = enemy.ChooseThrow(player.LastThrow, player.ThrowHistory);
+                enemyThrow2 = enemy.ChooseThrow(player.LastThrow, player.ThrowHistory, EncounterPlayerThrows, EncounterEnemyThrows);
                 attempts++;
             }
 
@@ -92,6 +99,11 @@ public class BattleManager
 
         result.EnemyThrow = enemyThrow;
         GD.Print("Enemy Threw: " + enemyThrow.ToString());
+
+        // Record throws for this round in the encounter history
+        EncounterPlayerThrows.Add(new List<Throws> { playerThrow });
+        EncounterEnemyThrows.Add(new List<Throws> { enemyThrow });
+
         bool playerWon = DetermineWinner(playerThrow, enemyThrow);
 
         // Override playerWon if boss draw - treat as player win with half damage
@@ -110,6 +122,15 @@ public class BattleManager
             int damageBoost = GameState.Instance.GetBuffAmount("damage_boost");
             int totalDamage = baseDamage + damageBoost;
 
+            // Momentum enemy: damage is based on streak instead of base damage
+            if (enemy.BehaviorName == "momentum")
+            {
+                int streak = MomentumBehavior.GetCurrentStreak(EncounterPlayerThrows, EncounterEnemyThrows);
+                // Negative streak = player win streak (enemy loss streak)
+                totalDamage = MomentumBehavior.GetStreakDamage(streak);
+                GD.Print($"Momentum enemy - player streak: {streak}, damage: {totalDamage}");
+            }
+
             // If boss draw, player deals half damage
             if (isBossDraw)
             {
@@ -127,6 +148,15 @@ public class BattleManager
         else if (playerThrow != enemyThrow)
         {
             int incomingDamage = enemy.strength;
+
+            // Momentum enemy: damage is based on streak
+            if (enemy.BehaviorName == "momentum")
+            {
+                int streak = MomentumBehavior.GetCurrentStreak(EncounterPlayerThrows, EncounterEnemyThrows);
+                // Positive streak = enemy win streak
+                incomingDamage = MomentumBehavior.GetStreakDamage(streak);
+                GD.Print($"Momentum enemy - enemy streak: {streak}, damage: {incomingDamage}");
+            }
 
             // Apply damage reduction buffs
             int damageReduction = GameState.Instance.GetBuffAmount("damage_reduction");

@@ -11,6 +11,7 @@ public partial class Enemy : Node2D
     private RandomNumberGenerator rng;
     private IEnemyBehavior behaviorInstance;
     public bool isBoss = false;
+    public string BehaviorName => enemyData?.behavior;
 
     private Label nameLabel;
 
@@ -97,10 +98,14 @@ public partial class Enemy : Node2D
 
     // previousPlayerThrow: the player's last throw (from previous round), may be null
     // playerHistory: list of previous player throws in this run (does not include current throw)
-    public Throws ChooseThrow(Throws? previousPlayerThrow = null, System.Collections.Generic.List<Throws> playerHistory = null)
+    // encounterPlayerThrows: list of lists - each round's player throws in this encounter
+    // encounterEnemyThrows: list of lists - each round's enemy throws in this encounter
+    public Throws ChooseThrow(Throws? previousPlayerThrow = null, System.Collections.Generic.List<Throws> playerHistory = null,
+                              System.Collections.Generic.List<System.Collections.Generic.List<Throws>> encounterPlayerThrows = null,
+                              System.Collections.Generic.List<System.Collections.Generic.List<Throws>> encounterEnemyThrows = null)
     {
         if (behaviorInstance != null)
-            return behaviorInstance.ChooseThrow(previousPlayerThrow, playerHistory);
+            return behaviorInstance.ChooseThrow(previousPlayerThrow, playerHistory, encounterPlayerThrows, encounterEnemyThrows);
 
         // fallback: rock
         return Throws.rock;

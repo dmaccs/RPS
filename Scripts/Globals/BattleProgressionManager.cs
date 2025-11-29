@@ -69,12 +69,16 @@ public partial class BattleProgressionManager : Node
 
     public string GetEnemyForCurrentBattle()
     {
+
         if (progressionData == null || progressionData.Battles == null || progressionData.Battles.Count == 0)
         {
             GD.PrintErr("No battle progression data loaded, using fallback");
             return "RandomEnemy";
         }
-
+        if (GameManager.Instance.IsTesting)
+        {
+            return SelectWeightedEnemy(progressionData.Battles[0], 0);
+        }
         int currentGroup = GetCurrentGroup();
 
         // Find the battle configuration for current group
