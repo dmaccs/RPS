@@ -9,7 +9,7 @@ script = ExtResource("1")
 layout_mode = 3
 anchors_preset = 0
 offset_left = 14.0
-offset_top = 520.0
+offset_top = 450.0
 offset_right = 105.0
 offset_bottom = 630.0
 
@@ -38,6 +38,14 @@ offset_bottom = 132.0
 text = "Rock: 1
 Paper: 1
 Scissors: 1"
+
+[node name="ThrowInventoryButton" type="Button" parent="Stats"]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 140.0
+offset_right = 90.0
+offset_bottom = 165.0
+text = "Throws"
 
 [node name="Inventory" type="Control" parent="."]
 layout_mode = 3

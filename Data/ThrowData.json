@@ -1,0 +1,120 @@
+{
+  "Throws": {
+	"basic_rock": {
+	  "Id": "basic_rock",
+	  "Name": "Rock",
+	  "Attributes": ["Rock"],
+	  "Evolved": false,
+	  "Effect": {
+		"EffectType": "basic_damage",
+		"ThrowType": "rock",
+		"BaseDamage": 1,
+		"Parameters": {}
+	  }
+	},
+	"basic_paper": {
+	  "Id": "basic_paper",
+	  "Name": "Paper",
+	  "Attributes": ["Paper"],
+	  "Evolved": false,
+	  "Effect": {
+		"EffectType": "basic_damage",
+		"ThrowType": "paper",
+		"BaseDamage": 1,
+		"Parameters": {}
+	  }
+	},
+	"basic_scissors": {
+	  "Id": "basic_scissors",
+	  "Name": "Scissors",
+	  "Attributes": ["Scissors"],
+	  "Evolved": false,
+	  "Effect": {
+		"EffectType": "basic_damage",
+		"ThrowType": "scissors",
+		"BaseDamage": 1,
+		"Parameters": {}
+	  }
+	},
+	"super_scissors": {
+	  "Id": "super_scissors",
+	  "Name": "Super Scissors",
+	  "Attributes": ["Scissors"],
+	  "Evolved": false,
+	  "Effect": {
+		"EffectType": "synergy_damage",
+		"ThrowType": "scissors",
+		"BaseDamage": 0,
+		"Parameters": {
+		  "per_attribute": 1
+		}
+	  }
+	},
+	"safety_scissors": {
+	  "Id": "safety_scissors",
+	  "Name": "Safety Scissors",
+	  "Attributes": ["Scissors"],
+	  "Evolved": false,
+	  "Effect": {
+		"EffectType": "defensive",
+		"ThrowType": "scissors",
+		"BaseDamage": 1,
+		"Parameters": {
+		  "block_amount": 1
+		}
+	  }
+	},
+	"stone_shield": {
+	  "Id": "stone_shield",
+	  "Name": "Stone Shield",
+	  "Attributes": ["Rock"],
+	  "Evolved": false,
+	  "Effect": {
+		"EffectType": "defensive",
+		"ThrowType": "rock",
+		"BaseDamage": 1,
+		"Parameters": {
+		  "block_amount": 2
+		}
+	  }
+	},
+	"vampire_scissors": {
+	  "Id": "vampire_scissors",
+	  "Name": "Vampire Scissors",
+	  "Attributes": ["Scissors"],
+	  "Evolved": false,
+	  "Effect": {
+		"EffectType": "lifesteal",
+		"ThrowType": "scissors",
+		"BaseDamage": 2,
+		"Parameters": {
+		  "heal_percent": 50
+		}
+	  }
+	},
+	"iron_ball": {
+	  "Id": "iron_ball",
+	  "Name": "Iron Ball",
+	  "Attributes": ["Rock", "Rock"],
+	  "Evolved": false,
+	  "Effect": {
+		"EffectType": "basic_damage",
+		"ThrowType": "rock",
+		"BaseDamage": 2,
+		"Parameters": {}
+	  }
+	},
+	"origami": {
+	  "Id": "origami",
+	  "Name": "Origami",
+	  "Attributes": ["Paper", "Scissors"],
+	  "Evolved": false,
+	  "Effect": {
+		"EffectType": "basic_damage",
+		"ThrowType": "paper",
+		"BaseDamage": 1,
+		"Parameters": {}
+	  }
+	}
+  }
+}

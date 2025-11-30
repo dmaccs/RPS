@@ -1,9 +1,6 @@
-[gd_scene load_steps=5 format=3 uid="uid://dladrui27sl6k"]
+[gd_scene load_steps=2 format=3 uid="uid://dladrui27sl6k"]
 
 [ext_resource type="Script" uid="uid://c0vwa77afhydg" path="res://Scripts/Combat/BattleScene.cs" id="1_7w3tg"]
-[ext_resource type="Texture2D" uid="uid://btt23afx6i3cm" path="res://art/Rock.png" id="1_di180"]
-[ext_resource type="Texture2D" uid="uid://t61u6rcwsy32" path="res://art/scroll.png" id="2_7w3tg"]
-[ext_resource type="Texture2D" uid="uid://cs8dyuxvvcn2r" path="res://art/Sciz.png" id="3_jpurs"]
 
 [node name="Control" type="Control"]
 layout_mode = 3
@@ -14,32 +11,14 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_7w3tg")
 
-[node name="Rock" type="TextureButton" parent="."]
+[node name="ThrowButtonContainer" type="HBoxContainer" parent="."]
 layout_mode = 0
 offset_left = 216.0
 offset_top = 448.0
-offset_right = 360.0
-offset_bottom = 592.0
-texture_normal = ExtResource("1_di180")
-stretch_mode = 0
-
-[node name="Paper" type="TextureButton" parent="."]
-layout_mode = 0
-offset_left = 504.0
-offset_top = 448.0
-offset_right = 648.0
-offset_bottom = 592.0
-texture_normal = ExtResource("2_7w3tg")
-stretch_mode = 0
-
-[node name="Scissors" type="TextureButton" parent="."]
-layout_mode = 0
-offset_left = 792.0
-offset_top = 448.0
 offset_right = 936.0
-offset_bottom = 592.0
-texture_normal = ExtResource("3_jpurs")
-stretch_mode = 0
+offset_bottom = 620.0
+theme_override_constants/separation = 40
+alignment = 1
 
 [node name="CombatFeedbackPanel" type="Control" parent="."]
 visible = false

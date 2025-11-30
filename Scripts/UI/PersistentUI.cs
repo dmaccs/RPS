@@ -1,6 +1,8 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Rps;
 
 // This script should be attached to the root CanvasLayer of PersistentUI.tscn
 public partial class PersistentUI : CanvasLayer
@@ -20,6 +22,10 @@ public partial class PersistentUI : CanvasLayer
     private Panel tooltip;
     private Label tooltipLabel;
     private bool isTooltipActive = false;
+
+    // Throw inventory button
+    private Button throwInventoryButton;
+    private Node currentInventoryInstance = null;
 
     public override void _Ready()
     {
@@ -66,7 +72,35 @@ public partial class PersistentUI : CanvasLayer
         healthLabel.SetMouseFilter(Control.MouseFilterEnum.Ignore);
         strengthLabel.SetMouseFilter(Control.MouseFilterEnum.Ignore);
 
+        // Get or create throw inventory button
+        throwInventoryButton = GetNodeOrNull<Button>("Stats/ThrowInventoryButton");
+        if (throwInventoryButton != null)
+        {
+            throwInventoryButton.Pressed += OnThrowInventoryButtonPressed;
+        }
+
         UpdateUI();
+    }
+
+    private void OnThrowInventoryButtonPressed()
+    {
+        // Don't open if one is already open
+        if (currentInventoryInstance != null && IsInstanceValid(currentInventoryInstance))
+        {
+            return;
+        }
+
+        // Load and show inventory scene as overlay
+        var inventoryScene = GD.Load<PackedScene>("res://Scenes/Inventory/InventoryScene.tscn");
+        if (inventoryScene != null)
+        {
+            currentInventoryInstance = inventoryScene.Instantiate();
+            GetTree().CurrentScene.AddChild(currentInventoryInstance);
+        }
+        else
+        {
+            GD.PrintErr("Failed to load InventoryScene.tscn");
+        }
     }
 
     private void OnSlotInput(int slotIndex, InputEvent inputEvent)
@@ -193,7 +227,7 @@ public partial class PersistentUI : CanvasLayer
         GD.Print($"PersistentUI.UpdateUI: health={gameState.PlayerHealth}/{gameState.MaxPlayerHealth}, gold={gameState.PlayerGold}");
     }
 
-    // Update move-level display (rock/paper/scissors)
+    // Update move-level display - now shows equipped throws from new system
     private void UpdateMoveLevels()
     {
         if (strengthLabel == null) return;
@@ -201,24 +235,53 @@ public partial class PersistentUI : CanvasLayer
         if (player == null)
             return;
 
-        int rockLevel = 0;
-        int paperLevel = 0;
-        int scissorsLevel = 0;
-
-        foreach (var move in player.CurrentThrows)
+        // If new throw system is active (has equipped throws)
+        if (player.GetEquippedCount() > 0)
         {
-            switch (move.Type)
-            {
-                case Rps.Throws.rock:
-                    rockLevel = move.Level; break;
-                case Rps.Throws.paper:
-                    paperLevel = move.Level; break;
-                case Rps.Throws.scissors:
-                    scissorsLevel = move.Level; break;
-            }
-        }
+            var lines = new List<string>();
+            lines.Add("Equipped:");
 
-        strengthLabel.Text = $"Rock: {rockLevel}\nPaper: {paperLevel}\nScissors: {scissorsLevel}";
+            foreach (var throwData in player.EquippedThrows)
+            {
+                if (throwData == null) continue;
+
+                // Format: "Rock (1 dmg) [R]"
+                string attrStr = string.Join("/", throwData.Attributes.Select(a => a.ToString()[0]));
+                lines.Add($"  {throwData.Name} ({throwData.Effect.BaseDamage}dmg) [{attrStr}]");
+            }
+
+            // Show synergy counts
+            int rockCount = player.GetEquippedAttributeCount(ThrowAttribute.Rock);
+            int paperCount = player.GetEquippedAttributeCount(ThrowAttribute.Paper);
+            int scissorsCount = player.GetEquippedAttributeCount(ThrowAttribute.Scissors);
+
+            lines.Add("---");
+            lines.Add($"R:{rockCount} P:{paperCount} S:{scissorsCount}");
+
+            strengthLabel.Text = string.Join("\n", lines);
+        }
+        else
+        {
+            // Fall back to old system (deprecated)
+            int rockLevel = 0;
+            int paperLevel = 0;
+            int scissorsLevel = 0;
+
+            foreach (var move in player.CurrentThrows)
+            {
+                switch (move.Type)
+                {
+                    case Throws.rock:
+                        rockLevel = move.Level; break;
+                    case Throws.paper:
+                        paperLevel = move.Level; break;
+                    case Throws.scissors:
+                        scissorsLevel = move.Level; break;
+                }
+            }
+
+            strengthLabel.Text = $"Rock: {rockLevel}\nPaper: {paperLevel}\nScissors: {scissorsLevel}";
+        }
     }
 
     private void UpdateInventorySlots()

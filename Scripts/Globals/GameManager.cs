@@ -72,6 +72,9 @@ public partial class GameManager : Node
             "res://Scenes/Transitions/VictoryScene.tscn",
         };
 
+        // Initialize throws with starting set
+        Player.InitializeThrows();
+
         LoadNextScene();
     }
 
@@ -102,6 +105,10 @@ public partial class GameManager : Node
         }
 
         Player = new Player();
+
+        // Initialize throws with starting set (new throw system)
+        Player.InitializeThrows();
+
         stageIndex = 0;
 
         // Reset battle progression

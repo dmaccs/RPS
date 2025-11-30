@@ -7,12 +7,10 @@ public partial class BossScene : BattleScene
     {
 		// Override base._Ready() to customize enemy spawning
 		player = GameManager.Instance.Player;
-		rock = GetNode<TextureButton>("Rock");
-		paper = GetNode<TextureButton>("Paper");
-		scissors = GetNode<TextureButton>("Scissors");
-		rock.Pressed += () => OnButtonPressed(Rps.Throws.rock);
-		paper.Pressed += () => OnButtonPressed(Rps.Throws.paper);
-		scissors.Pressed += () => OnButtonPressed(Rps.Throws.scissors);
+
+		// Set up dynamic throw buttons
+		throwButtonContainer = GetNode<HBoxContainer>("ThrowButtonContainer");
+		SetupDynamicThrowButtons();
 
 		// Get combat feedback UI elements
 		combatFeedbackPanel = GetNode<Control>("CombatFeedbackPanel");
@@ -20,6 +18,7 @@ public partial class BossScene : BattleScene
 		enemyThrowIcon = GetNode<TextureRect>("CombatFeedbackPanel/HBoxContainer/EnemyThrowIcon");
 		resultLabel = GetNode<Label>("CombatFeedbackPanel/HBoxContainer/VBoxContainer/ResultLabel");
 		damageLabel = GetNode<Label>("CombatFeedbackPanel/HBoxContainer/VBoxContainer/DamageLabel");
+		specialMessageLabel = GetNodeOrNull<Label>("CombatFeedbackPanel/HBoxContainer/VBoxContainer/SpecialLabel");
 
 		// Hide feedback panel initially
 		combatFeedbackPanel.Visible = false;

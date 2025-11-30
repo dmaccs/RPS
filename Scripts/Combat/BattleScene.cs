@@ -1,11 +1,12 @@
 using Godot;
 using Rps;
+using System.Collections.Generic;
 
 public partial class BattleScene : Control
 {
-	protected TextureButton rock;
-	protected TextureButton paper;
-	protected TextureButton scissors;
+	// Dynamic throw buttons
+	protected List<TextureButton> throwButtons = new List<TextureButton>();
+	protected HBoxContainer throwButtonContainer;
 
 	// Combat feedback UI elements
 	protected Control combatFeedbackPanel;
@@ -13,6 +14,7 @@ public partial class BattleScene : Control
 	protected TextureRect enemyThrowIcon;
 	protected Label resultLabel;
 	protected Label damageLabel;
+	protected Label specialMessageLabel;
 
 	protected Enemy currentEnemy = null;
 	protected Node currentEnemyRoot = null; // Track root node to prevent leaks
@@ -24,12 +26,10 @@ public partial class BattleScene : Control
 	public override void _Ready()
 	{
 		player = GameManager.Instance.Player;
-		rock = GetNode<TextureButton>("Rock");
-		paper = GetNode<TextureButton>("Paper");
-		scissors = GetNode<TextureButton>("Scissors");
-		rock.Pressed += () => OnButtonPressed(Throws.rock);
-		paper.Pressed += () => OnButtonPressed(Throws.paper);
-		scissors.Pressed += () => OnButtonPressed(Throws.scissors);
+
+		// Set up dynamic throw buttons
+		throwButtonContainer = GetNode<HBoxContainer>("ThrowButtonContainer");
+		SetupDynamicThrowButtons();
 
 		// Get combat feedback UI elements
 		combatFeedbackPanel = GetNode<Control>("CombatFeedbackPanel");
@@ -37,6 +37,7 @@ public partial class BattleScene : Control
 		enemyThrowIcon = GetNode<TextureRect>("CombatFeedbackPanel/HBoxContainer/EnemyThrowIcon");
 		resultLabel = GetNode<Label>("CombatFeedbackPanel/HBoxContainer/VBoxContainer/ResultLabel");
 		damageLabel = GetNode<Label>("CombatFeedbackPanel/HBoxContainer/VBoxContainer/DamageLabel");
+		specialMessageLabel = GetNodeOrNull<Label>("CombatFeedbackPanel/HBoxContainer/VBoxContainer/SpecialLabel");
 
 		// Hide feedback panel initially
 		combatFeedbackPanel.Visible = false;
@@ -44,32 +45,100 @@ public partial class BattleScene : Control
 		GetEnemy();
 	}
 
+	protected void SetupDynamicThrowButtons()
+	{
+		// Clear any existing buttons
+		foreach (var btn in throwButtons)
+		{
+			btn.QueueFree();
+		}
+		throwButtons.Clear();
+
+		// Create button for each non-null equipped throw
+		for (int i = 0; i < 3; i++)
+		{
+			var throwData = player.EquippedThrows[i];
+			if (throwData != null)
+			{
+				var button = CreateThrowButton(throwData, i);
+				throwButtonContainer.AddChild(button);
+				throwButtons.Add(button);
+			}
+		}
+	}
+
+	protected TextureButton CreateThrowButton(ThrowData throwData, int index)
+	{
+		var button = new TextureButton();
+		button.Name = $"ThrowButton_{index}";
+
+		// Get throw type from effect for icon
+		var effect = ThrowEffectFactory.Create(throwData.Effect.EffectType);
+		Throws throwType = effect.GetThrowType(throwData);
+
+		// Load appropriate texture
+		button.TextureNormal = LoadThrowTexture(throwType);
+		button.StretchMode = TextureButton.StretchModeEnum.Scale;
+		button.CustomMinimumSize = new Vector2(144, 144);
+
+		// Add label for throw name
+		var label = new Label();
+		label.Text = throwData.Name;
+		label.HorizontalAlignment = HorizontalAlignment.Center;
+		label.Position = new Vector2(0, 148);
+		button.AddChild(label);
+
+		// Connect press event
+		int capturedIndex = index;
+		button.Pressed += () => OnThrowButtonPressed(capturedIndex);
+
+		// Visual feedback on press
+		button.ButtonDown += () =>
+		{
+			button.Modulate = new Color(0.7f, 0.7f, 0.7f, 1f);
+			button.Scale = new Vector2(0.95f, 0.95f);
+		};
+		button.ButtonUp += () =>
+		{
+			button.Modulate = new Color(1f, 1f, 1f, 1f);
+			button.Scale = new Vector2(1f, 1f);
+		};
+
+		return button;
+	}
+
+	protected void OnThrowButtonPressed(int index)
+	{
+		if (index < 0 || index >= 3 || player.EquippedThrows[index] == null)
+			return;
+
+		var throwData = player.EquippedThrows[index];
+		GD.Print($"You threw: {throwData.Name}");
+
+		var result = battleManager.ResolveRound(throwData);
+		ShowCombatFeedback(result);
+
+		CheckPlayerDeath();
+	}
+
+	protected void CheckPlayerDeath()
+	{
+		if (player.IsDead())
+		{
+			GD.Print("Player died!");
+			if (GameState.Instance != null && currentEnemy != null)
+			{
+				GameState.Instance.LastKillerName = currentEnemy.GetDisplayName();
+				GameState.Instance.LastScore = 100;
+			}
+			GetTree().CallDeferred("change_scene_to_file", "res://Scenes/Transitions/LoseScene.tscn");
+		}
+	}
+
 	// Public method so PersistentUI can access the current enemy for item usage
 	public Enemy GetCurrentEnemy()
 	{
 		return currentEnemy;
-	}
-
-	protected void OnButtonPressed(Throws playerThrow)
-	{
-		GD.Print("You threw: " + playerThrow);
-
-		var result = battleManager.ResolveRound(playerThrow);
-		ShowCombatFeedback(result);
-
-		// Check if player died
-		if (player.IsDead())
-		{
-			GD.Print("Player died!");
-			// Store killer info in GameState
-			if (GameState.Instance != null && currentEnemy != null)
-			{
-				GameState.Instance.LastKillerName = currentEnemy.GetDisplayName();
-				GameState.Instance.LastScore = 100; // Placeholder score for now
-			}
-			// Transition to lose scene
-			GetTree().CallDeferred("change_scene_to_file", "res://Scenes/Transitions/LoseScene.tscn");
-		}
 	}
 
 	protected void ShowCombatFeedback(RoundResult result)
@@ -96,20 +165,43 @@ public partial class BattleScene : Control
 		}
 
 		// Set damage text
+		string damageText;
 		if (result.DamageDealt > 0)
 		{
 			if (result.DamageTarget == "enemy")
 			{
-				damageLabel.Text = $"Enemy takes {result.DamageDealt} damage!";
+				damageText = $"Enemy takes {result.DamageDealt} damage!";
 			}
 			else
 			{
-				damageLabel.Text = $"You take {result.DamageDealt} damage!";
+				damageText = $"You take {result.DamageDealt} damage!";
 			}
 		}
 		else
 		{
-			damageLabel.Text = "No damage!";
+			damageText = "No damage!";
+		}
+
+		// Add heal amount if present
+		if (result.HealAmount > 0)
+		{
+			damageText += $"\nYou heal {result.HealAmount} HP!";
+		}
+
+		damageLabel.Text = damageText;
+
+		// Show special message from effect if present
+		if (specialMessageLabel != null)
+		{
+			if (!string.IsNullOrEmpty(result.SpecialMessage))
+			{
+				specialMessageLabel.Text = result.SpecialMessage;
+				specialMessageLabel.Visible = true;
+			}
+			else
+			{
+				specialMessageLabel.Visible = false;
+			}
 		}
 
 		// Show the feedback panel
