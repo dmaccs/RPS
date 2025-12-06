@@ -11,6 +11,52 @@ namespace Rps
         Draw
     }
 
+    // Stats calculated for a throw each round (damage, block, heal, etc.)
+    public class ThrowStats
+    {
+        public int Damage { get; set; } = 0;      // Damage dealt to enemy
+        public int Block { get; set; } = 0;       // Damage reduction this round
+        public int Heal { get; set; } = 0;        // Self-heal amount
+        public int Lifesteal { get; set; } = 0;   // Heal % of damage dealt
+
+        // Additional properties for special effects
+        public float IncomingDamageMultiplier { get; set; } = 1.0f;  // Multiplier for damage taken
+        public List<StatusEffect> EnemyStatusEffects { get; set; } = new List<StatusEffect>();
+        public List<BuffApplication> BuffsToApply { get; set; } = new List<BuffApplication>();
+        public string TransformToThrowId { get; set; } = null;
+        public string SpecialMessage { get; set; } = null;
+
+        public ThrowStats() { }
+
+        // Copy constructor
+        public ThrowStats(ThrowStats other)
+        {
+            if (other == null) return;
+            Damage = other.Damage;
+            Block = other.Block;
+            Heal = other.Heal;
+            Lifesteal = other.Lifesteal;
+            IncomingDamageMultiplier = other.IncomingDamageMultiplier;
+        }
+
+        // Apply a multiplier to the base stats (damage, block, heal)
+        public ThrowStats ApplyMultiplier(float multiplier)
+        {
+            return new ThrowStats
+            {
+                Damage = Mathf.RoundToInt(Damage * multiplier),
+                Block = Mathf.RoundToInt(Block * multiplier),
+                Heal = Mathf.RoundToInt(Heal * multiplier),
+                Lifesteal = Lifesteal, // Lifesteal % doesn't scale
+                IncomingDamageMultiplier = IncomingDamageMultiplier,
+                EnemyStatusEffects = new List<StatusEffect>(EnemyStatusEffects),
+                BuffsToApply = new List<BuffApplication>(BuffsToApply),
+                TransformToThrowId = TransformToThrowId,
+                SpecialMessage = SpecialMessage
+            };
+        }
+    }
+
     // Context passed to throw effects during battle resolution
     public class ThrowContext
     {
@@ -77,6 +123,12 @@ namespace Rps
         // Use this for throws with completely custom win/loss conditions.
         RoundOutcome? GetCustomOutcome(ThrowData throwData, Throws enemyThrow);
 
+        // Calculate stats for this round based on outcome multiplier
+        ThrowStats CalculateStats(ThrowContext context, float outcomeMultiplier);
+
+        // Apply additional effects after stats are calculated (status effects, transformations, etc.)
+        void ApplyAdditionalEffects(ThrowContext context, ThrowStats appliedStats);
+
         // Calculate result when player wins the round
         ThrowResult OnPlayerWin(ThrowContext context);
 
@@ -102,5 +154,42 @@ namespace Rps
         public virtual ThrowResult OnPlayerLose(ThrowContext context) => new ThrowResult();
         public virtual ThrowResult OnDraw(ThrowContext context) => new ThrowResult();
         public virtual void OnAfterRound(ThrowContext context, RoundOutcome outcome, int damageDealt, int damageTaken) { }
+
+        public virtual ThrowStats CalculateStats(ThrowContext context, float outcomeMultiplier)
+        {
+            var baseStats = context.Throw.Effect?.BaseStats;
+            if (baseStats == null)
+            {
+                // Fallback for legacy effects: use BaseDamage
+                return new ThrowStats
+                {
+                    Damage = Mathf.RoundToInt((context.Throw.Effect?.BaseDamage ?? 0) * outcomeMultiplier)
+                };
+            }
+
+            // Check for outcome-specific overrides
+            var overrides = context.Throw.Effect?.OutcomeOverrides;
+            if (overrides != null)
+            {
+                string outcomeKey = context.Outcome switch
+                {
+                    RoundOutcome.PlayerWin => "win",
+                    RoundOutcome.Draw => "draw",
+                    RoundOutcome.EnemyWin => "loss",
+                    _ => "draw"
+                };
+
+                if (overrides.TryGetValue(outcomeKey, out var overrideStats))
+                {
+                    // Use override stats directly (no multiplier)
+                    return new ThrowStats(overrideStats);
+                }
+            }
+
+            // Apply multiplier to base stats
+            return baseStats.ApplyMultiplier(outcomeMultiplier);
+        }
+
+        public virtual void ApplyAdditionalEffects(ThrowContext context, ThrowStats appliedStats) { }
     }
 }

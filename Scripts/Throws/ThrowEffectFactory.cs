@@ -9,9 +9,9 @@ namespace Rps
 
         public static IThrowEffect Create(string effectType)
         {
-            // Default to basic_damage if not specified
+            // Default to standard if not specified
             if (string.IsNullOrEmpty(effectType))
-                effectType = "basic_damage";
+                effectType = "standard";
 
             // Use cached instance if available
             if (effectCache.TryGetValue(effectType, out var cached))
@@ -19,22 +19,22 @@ namespace Rps
 
             IThrowEffect effect = effectType switch
             {
-                "basic_damage" => new BasicDamageEffect(),
+                "standard" => new StandardEffect(),
                 "synergy_damage" => new SynergyDamageEffect(),
-                "defensive" => new DefensiveEffect(),
-                "lifesteal" => new LifestealEffect(),
                 "shale" => new ShaleEffect(),
                 "shale_shards" => new ShaleShardsEffect(),
                 "uranium" => new UraniumEffect(),
                 "grievances" => new GrievancesEffect(),
-                _ => new BasicDamageEffect()  // Fallback to basic damage
+                _ => new StandardEffect()
             };
 
             effectCache[effectType] = effect;
 
-            if (effectType != "basic_damage" && effect is BasicDamageEffect)
+            // Log warning for unknown effect types
+            var knownTypes = new[] { "standard", "synergy_damage", "shale", "shale_shards", "uranium", "grievances" };
+            if (!System.Array.Exists(knownTypes, t => t == effectType))
             {
-                GD.PrintErr($"Unknown throw effect type: {effectType}, falling back to basic_damage");
+                GD.PrintErr($"Unknown throw effect type: {effectType}, falling back to standard");
             }
 
             return effect;

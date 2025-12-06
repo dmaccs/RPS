@@ -24,12 +24,10 @@ namespace RPS.Scripts.Behaviors
             int idx = rng.RandiRange(0, allowed.Count - 1);
             return allowed[idx];
         }
-
-        /// <summary>
-        /// Calculate the current momentum streak from encounter history.
-        /// Positive = enemy win streak, Negative = enemy loss streak.
-        /// Draws reset the streak to 0.
-        /// </summary>
+        
+        // Calculate the current momentum streak from encounter history.
+        // Positive = enemy win streak, Negative = enemy loss streak.
+        // Draws reset the streak to 0.
         public static int GetCurrentStreak(List<List<Throws>> encounterPlayerThrows, List<List<Throws>> encounterEnemyThrows)
         {
             if (encounterPlayerThrows == null || encounterEnemyThrows == null)
@@ -72,11 +70,9 @@ namespace RPS.Scripts.Behaviors
 
             return streak;
         }
-
-        /// <summary>
-        /// Get damage bonus based on streak length.
-        /// Streak of 1 = 1, streak of 2 = 2, etc.
-        /// </summary>
+        
+        // Get damage bonus based on streak length.
+        // Streak of 1 = 1, streak of 2 = 2, etc.
         public static int GetStreakDamage(int streak)
         {
             return Mathf.Abs(streak);

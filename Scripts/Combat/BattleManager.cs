@@ -3,18 +3,16 @@ using Godot;
 using Rps;
 using RPS.Scripts.Behaviors;
 
-// RoundOutcome is now defined in Scripts/Throws/IThrowEffect.cs
-
 public class RoundResult
 {
-    public ThrowData PlayerThrowData { get; set; }      // NEW: Full throw data
-    public Throws PlayerThrow { get; set; }              // Resolved throw type
+    public ThrowData PlayerThrowData { get; set; }
+    public Throws PlayerThrow { get; set; }
     public Throws EnemyThrow { get; set; }
     public RoundOutcome Outcome { get; set; }
     public int DamageDealt { get; set; }
-    public string DamageTarget { get; set; }             // "player" or "enemy"
-    public int HealAmount { get; set; }                  // NEW: Healing from effects
-    public string SpecialMessage { get; set; }           // NEW: Effect message
+    public string DamageTarget { get; set; }
+    public int HealAmount { get; set; }
+    public string SpecialMessage { get; set; }
 }
 
 public class BattleManager
@@ -36,10 +34,42 @@ public class BattleManager
     // Player throw history for this battle (ThrowData objects)
     public List<ThrowData> PlayerThrowDataHistory { get; private set; } = new List<ThrowData>();
 
+    // Persistent block system
+    private int persistentBlock = 0;
+    private int persistentBlockDuration = 0;
+
     public BattleManager(Player player, Enemy enemy)
     {
         this.player = player;
         this.enemy = enemy;
+    }
+
+    // Get total block (round block + persistent block)
+    public int GetTotalBlock(int roundBlock)
+    {
+        return roundBlock + persistentBlock;
+    }
+
+    // Add persistent block that lasts multiple rounds
+    public void AddPersistentBlock(int amount, int duration)
+    {
+        persistentBlock += amount;
+        persistentBlockDuration = Godot.Mathf.Max(persistentBlockDuration, duration);
+        GD.Print($"Added persistent block: {amount} for {duration} rounds. Total: {persistentBlock}");
+    }
+
+    // Process persistent block at end of round
+    private void ProcessPersistentBlock()
+    {
+        if (persistentBlockDuration > 0)
+        {
+            persistentBlockDuration--;
+            if (persistentBlockDuration <= 0)
+            {
+                GD.Print($"Persistent block expired: {persistentBlock}");
+                persistentBlock = 0;
+            }
+        }
     }
 
     // Get the effective throw data, accounting for transformations
@@ -68,11 +98,16 @@ public class BattleManager
         GD.Print($"Throw transformed: {originalId} -> {newId}");
     }
 
-    // NEW: Resolve round using ThrowData (new throw system)
     public RoundResult ResolveRound(ThrowData playerThrowData)
     {
         // Process status effects at the start of the round
         int statusDamage = enemy.ProcessStatusEffects();
+
+        // Check for trapped state - use special trapped resolution
+        if (enemy.IsTrapped)
+        {
+            return ResolveTrappedRound(playerThrowData);
+        }
 
         // Apply any transformations for this battle
         playerThrowData = GetEffectiveThrowData(playerThrowData);
@@ -183,90 +218,127 @@ public class BattleManager
         // Apply effect based on outcome
         result.Outcome = outcome;
         context.Outcome = outcome;
-        ThrowResult effectResult;
+        
+        // Get the outcome multiplier
+        float playerMultiplier = CombatConfig.GetPlayerMultiplier(outcome);
+        float incomingMultiplier = CombatConfig.GetIncomingMultiplier(outcome);
 
-        if (outcome == RoundOutcome.PlayerWin)
+        // Calculate stats using the new system
+        ThrowStats stats = effect.CalculateStats(context, playerMultiplier);
+        
+        int totalDamage = stats.Damage;
+
+        // Apply damage boost buffs
+        int damageBoost = GameState.Instance.GetBuffAmount("damage_boost");
+        totalDamage += damageBoost;
+
+        // Apply vulnerable status effect on enemy
+        float vulnerableMultiplier = enemy.GetDamageMultiplier();
+        if (vulnerableMultiplier != 1.0f)
         {
-            effectResult = effect.OnPlayerWin(context);
+            totalDamage = Godot.Mathf.RoundToInt(totalDamage * vulnerableMultiplier);
+            GD.Print($"Vulnerable multiplier: {vulnerableMultiplier}x -> {totalDamage}");
+        }
 
-            int totalDamage = effectResult.DamageDealt;
+        // Momentum enemy: override damage with streak
+        if (enemy.BehaviorName == "momentum")
+        {
+            int streak = MomentumBehavior.GetCurrentStreak(EncounterPlayerThrows, EncounterEnemyThrows);
+            totalDamage = MomentumBehavior.GetStreakDamage(streak);
+            GD.Print($"Momentum enemy - streak: {streak}, damage: {totalDamage}");
+        }
 
-            // Apply damage boost buffs
-            int damageBoost = GameState.Instance.GetBuffAmount("damage_boost");
-            totalDamage += damageBoost;
+        // Boss draw halves damage
+        if (isBossDraw)
+        {
+            totalDamage = Godot.Mathf.Max(1, totalDamage / 2);
+            GD.Print($"Boss draw - player deals half damage: {totalDamage}");
+        }
 
-            // Momentum enemy: override damage with streak
-            if (enemy.BehaviorName == "momentum")
-            {
-                int streak = MomentumBehavior.GetCurrentStreak(EncounterPlayerThrows, EncounterEnemyThrows);
-                totalDamage = MomentumBehavior.GetStreakDamage(streak);
-                GD.Print($"Momentum enemy - player streak: {streak}, damage: {totalDamage}");
-            }
-
-            // Boss draw halves damage
-            if (isBossDraw)
-            {
-                totalDamage = Godot.Mathf.Max(1, totalDamage / 2);
-                GD.Print($"Boss draw - player deals half damage: {totalDamage}");
-            }
-
-            result.DamageDealt = totalDamage;
-            result.DamageTarget = "enemy";
-            result.SpecialMessage = effectResult.SpecialMessage;
-
-            GD.Print($"Player won! Damage: {totalDamage}");
+        // Deal damage to enemy
+        if (totalDamage > 0)
+        {
             enemy.TakeDamage(totalDamage);
-
-            // Apply healing from effect
-            if (effectResult.HealAmount > 0)
-            {
-                player.Heal(effectResult.HealAmount);
-                result.HealAmount = effectResult.HealAmount;
-                GD.Print($"Player healed for {effectResult.HealAmount}");
-            }
+            GD.Print($"Player dealt {totalDamage} damage to enemy");
         }
-        else if (outcome == RoundOutcome.EnemyWin)
+        
+        int baseIncomingDamage = enemy.strength;
+
+        // Momentum enemy: override damage
+        if (enemy.BehaviorName == "momentum")
         {
-            effectResult = effect.OnPlayerLose(context);
+            int streak = MomentumBehavior.GetCurrentStreak(EncounterPlayerThrows, EncounterEnemyThrows);
+            baseIncomingDamage = MomentumBehavior.GetStreakDamage(streak);
+        }
 
-            int incomingDamage = enemy.strength;
+        // Apply incoming damage multiplier based on outcome
+        int incomingDamage = Godot.Mathf.RoundToInt(baseIncomingDamage * incomingMultiplier);
 
-            // Momentum enemy: override damage with streak
-            if (enemy.BehaviorName == "momentum")
-            {
-                int streak = MomentumBehavior.GetCurrentStreak(EncounterPlayerThrows, EncounterEnemyThrows);
-                incomingDamage = MomentumBehavior.GetStreakDamage(streak);
-                GD.Print($"Momentum enemy - enemy streak: {streak}, damage: {incomingDamage}");
-            }
+        // Apply effect's custom incoming damage multiplier (for special throws like Paper Cannon)
+        if (stats.IncomingDamageMultiplier != 1.0f)
+        {
+            incomingDamage = Godot.Mathf.RoundToInt(incomingDamage * stats.IncomingDamageMultiplier);
+            GD.Print($"Effect incoming multiplier: {stats.IncomingDamageMultiplier}x -> {incomingDamage}");
+        }
 
-            // Apply incoming damage multiplier from effect
-            if (effectResult.IncomingDamageMultiplier != 1.0f)
-            {
-                incomingDamage = Godot.Mathf.RoundToInt(incomingDamage * effectResult.IncomingDamageMultiplier);
-                GD.Print($"Damage multiplier applied: {effectResult.IncomingDamageMultiplier}x -> {incomingDamage}");
-            }
+        // Apply block (round block + persistent block)
+        int totalBlock = GetTotalBlock(stats.Block);
+        incomingDamage -= totalBlock;
 
-            // Apply damage reduction from effect
-            incomingDamage -= effectResult.DamageBlocked;
+        // Apply buff damage reduction
+        int buffReduction = GameState.Instance.GetBuffAmount("damage_reduction");
+        int finalDamage = Godot.Mathf.Max(0, incomingDamage - buffReduction);
 
-            // Apply buff damage reduction
-            int buffReduction = GameState.Instance.GetBuffAmount("damage_reduction");
-            int finalDamage = Godot.Mathf.Max(0, incomingDamage - buffReduction);
-
-            result.DamageDealt = finalDamage;
-            result.DamageTarget = "player";
-            result.SpecialMessage = effectResult.SpecialMessage;
-
-            GD.Print($"Player lost! Incoming: {enemy.strength}, Multiplier: {effectResult.IncomingDamageMultiplier}, Blocked: {effectResult.DamageBlocked}, Buff reduction: {buffReduction}, Final: {finalDamage}");
+        // Deal damage to player
+        if (finalDamage > 0)
+        {
             player.Damage(finalDamage);
+            GD.Print($"Player took {finalDamage} damage (base: {baseIncomingDamage}, incoming mult: {incomingMultiplier}x, blocked: {totalBlock}, buff: {buffReduction})");
         }
-        else // Draw
+        
+        int totalHeal = stats.Heal;
+
+        // Apply lifesteal
+        if (stats.Lifesteal > 0 && totalDamage > 0)
         {
-            effectResult = effect.OnDraw(context);
-            result.SpecialMessage = effectResult.SpecialMessage;
-            GD.Print("Draw - no damage");
+            int lifestealHeal = Godot.Mathf.Max(1, totalDamage * stats.Lifesteal / 100);
+            totalHeal += lifestealHeal;
+            GD.Print($"Lifesteal: {lifestealHeal} HP (from {totalDamage} damage)");
+        }
+
+        if (totalHeal > 0)
+        {
+            player.Heal(totalHeal);
+            GD.Print($"Player healed for {totalHeal}");
+        }
+
+        // Set result values
+        result.DamageDealt = totalDamage;  // For display purposes, show damage dealt
+        result.DamageTarget = "both";       // New: both sides take damage
+        result.HealAmount = totalHeal;
+        result.SpecialMessage = stats.SpecialMessage;
+
+        // Apply additional effects from the effect class
+        effect.ApplyAdditionalEffects(context, stats);
+
+        // Handle draw-specific enemy behavior
+        if (outcome == RoundOutcome.Draw)
+        {
             enemy.OnDraw();
         }
+
+        // Convert stats to legacy ThrowResult for compatibility
+        ThrowResult effectResult = new ThrowResult
+        {
+            DamageDealt = stats.Damage,
+            DamageBlocked = stats.Block,
+            HealAmount = totalHeal,
+            IncomingDamageMultiplier = stats.IncomingDamageMultiplier,
+            EnemyStatusEffects = stats.EnemyStatusEffects,
+            BuffsToApply = stats.BuffsToApply,
+            TransformToThrowId = stats.TransformToThrowId,
+            SpecialMessage = stats.SpecialMessage
+        };
 
         // Apply any buffs from effect
         if (effectResult.BuffsToApply != null)
@@ -296,8 +368,9 @@ public class BattleManager
         }
 
         // Calculate actual damage dealt/taken for OnAfterRound callback
-        int damageDealtToEnemy = result.DamageTarget == "enemy" ? result.DamageDealt : 0;
-        int damageTakenByPlayer = result.DamageTarget == "player" ? result.DamageDealt : 0;
+        // In new system, both happen so we track both
+        int damageDealtToEnemy = totalDamage;
+        int damageTakenByPlayer = finalDamage;
 
         // Call OnAfterRound callback for effects that need to react to final values
         effect.OnAfterRound(context, result.Outcome, damageDealtToEnemy, damageTakenByPlayer);
@@ -307,134 +380,133 @@ public class BattleManager
         player.LastThrow = playerThrow;
         PlayerThrowDataHistory.Add(playerThrowData);
 
+        // Process persistent block duration
+        ProcessPersistentBlock();
+
+        // Process enemy status effect durations (vulnerable, etc.)
+        enemy.ProcessStatusDurations();
+
         // Decrement buff durations
         GameState.Instance.DecrementBuffDurations();
 
         return result;
     }
 
-    // DEPRECATED: Keep for backward compatibility during migration
-    public RoundResult ResolveRound(Throws playerThrow)
+    // Resolve a round when enemy is trapped (player gets free attack)
+    private RoundResult ResolveTrappedRound(ThrowData playerThrowData)
     {
-        // Try to find matching ThrowData from equipped throws
-        ThrowData throwData = null;
-        foreach (var equipped in player.EquippedThrows)
-        {
-            if (equipped == null) continue;
-            var eff = ThrowEffectFactory.Create(equipped.Effect.EffectType);
-            if (eff.GetThrowType(equipped) == playerThrow)
-            {
-                throwData = equipped;
-                break;
-            }
-        }
+        GD.Print("Enemy is trapped - resolving trapped round");
 
-        // If found, use new system
-        if (throwData != null)
-        {
-            return ResolveRound(throwData);
-        }
+        // Apply any transformations for this battle
+        playerThrowData = GetEffectiveThrowData(playerThrowData);
 
-        // Fallback to old system for backward compatibility
+        var effect = ThrowEffectFactory.Create(playerThrowData.Effect.EffectType);
+        Throws playerThrow = effect.GetThrowType(playerThrowData);
+
         var result = new RoundResult
         {
+            PlayerThrowData = playerThrowData,
             PlayerThrow = playerThrow,
-            EnemyThrow = Throws.rock,
-            Outcome = RoundOutcome.Draw,
+            EnemyThrow = Throws.rock, // Doesn't matter, enemy attacks trap
+            Outcome = RoundOutcome.PlayerWin, // Player always wins when enemy is trapped
             DamageDealt = 0,
-            DamageTarget = ""
+            DamageTarget = "enemy",
+            HealAmount = 0,
+            SpecialMessage = "Enemy is trapped!"
         };
 
-        Throws enemyThrow = enemy.ChooseThrow(player.LastThrow, player.ThrowHistory, EncounterPlayerThrows, EncounterEnemyThrows);
-
-        bool isBossDraw = false;
-        if (enemy.isBoss)
-        {
-            Throws enemyThrow2 = enemy.ChooseThrow(player.LastThrow, player.ThrowHistory, EncounterPlayerThrows, EncounterEnemyThrows);
-            int attempts = 0;
-            while (enemyThrow2 == enemyThrow && attempts < 10)
-            {
-                enemyThrow2 = enemy.ChooseThrow(player.LastThrow, player.ThrowHistory, EncounterPlayerThrows, EncounterEnemyThrows);
-                attempts++;
-            }
-
-            int result1 = CompareThrows(enemyThrow, playerThrow);
-            int result2 = CompareThrows(enemyThrow2, playerThrow);
-
-            int bestResult = Godot.Mathf.Max(result1, result2);
-
-            if (bestResult == 0)
-            {
-                isBossDraw = true;
-                enemyThrow = result1 == 0 ? enemyThrow : enemyThrow2;
-            }
-            else if (result2 > result1)
-            {
-                enemyThrow = enemyThrow2;
-            }
-            else if (result1 == result2)
-            {
-                enemyThrow = RngManager.Instance.Rng.Randf() > 0.5f ? enemyThrow : enemyThrow2;
-            }
-        }
-
-        result.EnemyThrow = enemyThrow;
-
+        // Record throws
         EncounterPlayerThrows.Add(new List<Throws> { playerThrow });
-        EncounterEnemyThrows.Add(new List<Throws> { enemyThrow });
+        EncounterEnemyThrows.Add(new List<Throws> { Throws.rock });
 
-        bool playerWon = DetermineWinner(playerThrow, enemyThrow);
-        if (isBossDraw) playerWon = true;
-
-        if (playerWon)
+        // Create context
+        var context = new ThrowContext
         {
-            var move = player.CurrentThrows.Find(m => m.Type == playerThrow);
-            int baseDamage = move != null ? move.Level : 1;
-            int damageBoost = GameState.Instance.GetBuffAmount("damage_boost");
-            int totalDamage = baseDamage + damageBoost;
+            Player = player,
+            Enemy = enemy,
+            Throw = playerThrowData,
+            EnemyThrow = Throws.rock,
+            Outcome = RoundOutcome.PlayerWin,
+            EquippedThrows = player.EquippedThrows,
+            InventoryThrows = player.InventoryThrows,
+            PlayerThrowHistory = PlayerThrowDataHistory,
+            BattleState = BattleState
+        };
 
-            if (enemy.BehaviorName == "momentum")
-            {
-                int streak = MomentumBehavior.GetCurrentStreak(EncounterPlayerThrows, EncounterEnemyThrows);
-                totalDamage = MomentumBehavior.GetStreakDamage(streak);
-            }
+        // Player gets full win multiplier for free attack
+        float playerMultiplier = CombatConfig.PlayerWinMultiplier;
+        ThrowStats stats = effect.CalculateStats(context, playerMultiplier);
 
-            if (isBossDraw)
-            {
-                totalDamage = Godot.Mathf.Max(1, totalDamage / 2);
-            }
+        // Player deals damage to enemy (free attack)
+        int totalDamage = stats.Damage;
+        int damageBoost = GameState.Instance.GetBuffAmount("damage_boost");
+        totalDamage += damageBoost;
 
-            result.Outcome = RoundOutcome.PlayerWin;
-            result.DamageDealt = totalDamage;
-            result.DamageTarget = "enemy";
-            enemy.TakeDamage(totalDamage);
+        float vulnerableMultiplier = enemy.GetDamageMultiplier();
+        if (vulnerableMultiplier != 1.0f)
+        {
+            totalDamage = Godot.Mathf.RoundToInt(totalDamage * vulnerableMultiplier);
         }
-        else if (playerThrow != enemyThrow)
+
+        if (totalDamage > 0)
         {
-            int incomingDamage = enemy.strength;
+            enemy.TakeDamage(totalDamage);
+            GD.Print($"Player dealt {totalDamage} free damage to trapped enemy");
+        }
 
-            if (enemy.BehaviorName == "momentum")
-            {
-                int streak = MomentumBehavior.GetCurrentStreak(EncounterPlayerThrows, EncounterEnemyThrows);
-                incomingDamage = MomentumBehavior.GetStreakDamage(streak);
-            }
-
-            int damageReduction = GameState.Instance.GetBuffAmount("damage_reduction");
-            int finalDamage = Godot.Mathf.Max(0, incomingDamage - damageReduction);
-
-            result.Outcome = RoundOutcome.EnemyWin;
-            result.DamageDealt = finalDamage;
-            result.DamageTarget = "player";
-            player.Damage(finalDamage);
+        // Enemy attacks the trap instead of player
+        int trapDamage = enemy.strength;
+        bool trapBroken = enemy.DamageTrap(trapDamage);
+        if (trapBroken)
+        {
+            result.SpecialMessage = "Enemy broke free from the trap!";
         }
         else
         {
-            result.Outcome = RoundOutcome.Draw;
-            enemy.OnDraw();
+            result.SpecialMessage = $"Enemy attacks trap! ({enemy.TrapHealth} HP remaining)";
         }
 
+        // Player takes no damage while enemy is trapped
+        // Healing still applies
+        int totalHeal = stats.Heal;
+        if (stats.Lifesteal > 0 && totalDamage > 0)
+        {
+            totalHeal += Godot.Mathf.Max(1, totalDamage * stats.Lifesteal / 100);
+        }
+        if (totalHeal > 0)
+        {
+            player.Heal(totalHeal);
+        }
+
+        result.DamageDealt = totalDamage;
+        result.HealAmount = totalHeal;
+
+        // Apply additional effects
+        effect.ApplyAdditionalEffects(context, stats);
+
+        // Apply status effects and transformations
+        if (stats.EnemyStatusEffects != null)
+        {
+            foreach (var status in stats.EnemyStatusEffects)
+            {
+                enemy.ApplyStatusEffect(status.Type, status.Stacks);
+            }
+        }
+
+        if (!string.IsNullOrEmpty(stats.TransformToThrowId))
+        {
+            TransformThrow(playerThrowData.Id, stats.TransformToThrowId);
+        }
+
+        // Update history
         player.ThrowHistory.Add(playerThrow);
         player.LastThrow = playerThrow;
+        PlayerThrowDataHistory.Add(playerThrowData);
+
+        effect.OnAfterRound(context, result.Outcome, totalDamage, 0);
+
+        ProcessPersistentBlock();
+        enemy.ProcessStatusDurations();
         GameState.Instance.DecrementBuffDurations();
 
         return result;

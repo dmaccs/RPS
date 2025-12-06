@@ -60,18 +60,18 @@ public partial class RestScene : Control
 
 	private void UpdateThrowButtons()
 	{
-		var currentThrows = GameManager.Instance.Player.CurrentThrows;
+		var equippedThrows = GameManager.Instance.Player.EquippedThrows;
 
 		// Update each button
 		for (int i = 0; i < throwUpgradeButtons.Length; i++)
 		{
 			var button = throwUpgradeButtons[i];
+			var throwData = equippedThrows[i];
 
 			// If we have a throw for this slot
-			if (i < currentThrows.Count)
+			if (throwData != null)
 			{
-				var move = currentThrows[i];
-				button.Text = $"Train {move.Type} (Level {move.Level})";
+				button.Text = $"Train {throwData.Name} ({throwData.Effect.BaseDamage} dmg)";
 				button.Visible = true;
 
 				// Remove old handler if it exists
@@ -82,7 +82,8 @@ public partial class RestScene : Control
 				}
 
 				// Create and store new handler
-				Action newHandler = () => OnThrowSelected(move.Type);
+				int slotIndex = i;
+				Action newHandler = () => OnThrowSelected(slotIndex);
 				buttonHandlers[button] = newHandler;
 				button.Pressed += newHandler;
 			}
@@ -94,10 +95,12 @@ public partial class RestScene : Control
 		}
 	}
 
-	private void OnThrowSelected(Throws throwType)
+	private void OnThrowSelected(int slotIndex)
 	{
-		GameManager.Instance.Player.UpgradeThrow(throwType);
-		GD.Print($"Trained {throwType} throw!");
+		var player = GameManager.Instance.Player;
+		var throwData = player.EquippedThrows[slotIndex];
+		player.UpgradeEquippedThrow(slotIndex);
+		GD.Print($"Trained {throwData?.Name} throw!");
 
 		// Hide throw selection panel
 		throwSelectionPanel.Visible = false;

@@ -235,53 +235,27 @@ public partial class PersistentUI : CanvasLayer
         if (player == null)
             return;
 
-        // If new throw system is active (has equipped throws)
-        if (player.GetEquippedCount() > 0)
+        var lines = new List<string>();
+        lines.Add("Equipped:");
+
+        foreach (var throwData in player.EquippedThrows)
         {
-            var lines = new List<string>();
-            lines.Add("Equipped:");
+            if (throwData == null) continue;
 
-            foreach (var throwData in player.EquippedThrows)
-            {
-                if (throwData == null) continue;
-
-                // Format: "Rock (1 dmg) [R]"
-                string attrStr = string.Join("/", throwData.Attributes.Select(a => a.ToString()[0]));
-                lines.Add($"  {throwData.Name} ({throwData.Effect.BaseDamage}dmg) [{attrStr}]");
-            }
-
-            // Show synergy counts
-            int rockCount = player.GetEquippedAttributeCount(ThrowAttribute.Rock);
-            int paperCount = player.GetEquippedAttributeCount(ThrowAttribute.Paper);
-            int scissorsCount = player.GetEquippedAttributeCount(ThrowAttribute.Scissors);
-
-            lines.Add("---");
-            lines.Add($"R:{rockCount} P:{paperCount} S:{scissorsCount}");
-
-            strengthLabel.Text = string.Join("\n", lines);
+            // Format: "Rock (1 dmg) [R]"
+            string attrStr = string.Join("/", throwData.Attributes.Select(a => a.ToString()[0]));
+            lines.Add($"  {throwData.Name} ({throwData.Effect.BaseDamage}dmg) [{attrStr}]");
         }
-        else
-        {
-            // Fall back to old system (deprecated)
-            int rockLevel = 0;
-            int paperLevel = 0;
-            int scissorsLevel = 0;
 
-            foreach (var move in player.CurrentThrows)
-            {
-                switch (move.Type)
-                {
-                    case Throws.rock:
-                        rockLevel = move.Level; break;
-                    case Throws.paper:
-                        paperLevel = move.Level; break;
-                    case Throws.scissors:
-                        scissorsLevel = move.Level; break;
-                }
-            }
+        // Show synergy counts
+        int rockCount = player.GetEquippedAttributeCount(ThrowAttribute.Rock);
+        int paperCount = player.GetEquippedAttributeCount(ThrowAttribute.Paper);
+        int scissorsCount = player.GetEquippedAttributeCount(ThrowAttribute.Scissors);
 
-            strengthLabel.Text = $"Rock: {rockLevel}\nPaper: {paperLevel}\nScissors: {scissorsLevel}";
-        }
+        lines.Add("---");
+        lines.Add($"R:{rockCount} P:{paperCount} S:{scissorsCount}");
+
+        strengthLabel.Text = string.Join("\n", lines);
     }
 
     private void UpdateInventorySlots()

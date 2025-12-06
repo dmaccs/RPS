@@ -5,20 +5,11 @@ using Rps;
 
 public partial class Player : Node
 {
-    // === NEW THROW SYSTEM ===
     // Equipped throws (active in battle) - 3 slots, null = empty
     public ThrowData[] EquippedThrows { get; private set; } = new ThrowData[3];
 
     // Inventory throws (unequipped storage) - 3 slots, null = empty
     public ThrowData[] InventoryThrows { get; private set; } = new ThrowData[3];
-
-    // === DEPRECATED: Keep for backward compatibility during migration ===
-    public List<MoveData> CurrentThrows { get; private set; } = new List<MoveData>
-    {
-        new MoveData(Throws.rock, 1),
-        new MoveData(Throws.paper, 1),
-        new MoveData(Throws.scissors, 1)
-    };
 
     // Expose current stats by delegating to GameState
     public int Health => GameState.Instance.PlayerHealth;
@@ -46,8 +37,6 @@ public partial class Player : Node
 
     // History of throws for this run (does not include the current throw until after ResolveRound)
     public List<Throws> ThrowHistory { get; private set; } = new List<Throws>();
-
-    // === NEW THROW SYSTEM METHODS ===
 
     // Get count of non-null equipped throws
     public int GetEquippedCount()
@@ -237,39 +226,5 @@ public partial class Player : Node
         EquippedThrows[equippedIndex].Effect.BaseDamage++;
         GameState.Instance?.RefreshUI();
         return true;
-    }
-
-    // === DEPRECATED METHODS (keep for backward compatibility) ===
-
-    public void AddMove(Throws type, int level = 1)
-    {
-        if (CurrentThrows.Count >= 3)
-        {
-            GD.Print("Cannot have more than 3 moves.");
-            return;
-        }
-
-        CurrentThrows.Add(new MoveData(type, level));
-        GameState.Instance?.RefreshUI();
-    }
-
-    public void UpgradeThrow(Throws type)
-    {
-        var move = CurrentThrows.Find(m => m.Type == type);
-        if (move != null)
-        {
-            move.Level++;
-            GameState.Instance?.RefreshUI();
-        }
-        else
-        {
-            GD.Print("Move not found.");
-        }
-    }
-
-    public void RemoveMove(Throws type)
-    {
-        CurrentThrows.RemoveAll(m => m.Type == type);
-        GameState.Instance?.RefreshUI();
     }
 }

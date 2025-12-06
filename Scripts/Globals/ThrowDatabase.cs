@@ -88,6 +88,18 @@ public partial class ThrowDatabase : Node
                 EffectType = template.Effect.EffectType,
                 ThrowType = template.Effect.ThrowType,
                 BaseDamage = template.Effect.BaseDamage,
+                BaseStats = template.Effect.BaseStats != null
+                    ? new ThrowStats
+                    {
+                        Damage = template.Effect.BaseStats.Damage,
+                        Block = template.Effect.BaseStats.Block,
+                        Heal = template.Effect.BaseStats.Heal,
+                        Lifesteal = template.Effect.BaseStats.Lifesteal
+                    }
+                    : null,
+                OutcomeOverrides = template.Effect.OutcomeOverrides != null
+                    ? new Dictionary<string, ThrowStats>(template.Effect.OutcomeOverrides)
+                    : null,
                 Parameters = template.Effect.Parameters != null
                     ? new Dictionary<string, object>(template.Effect.Parameters)
                     : new Dictionary<string, object>()

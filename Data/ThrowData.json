@@ -3,45 +3,60 @@
 	"basic_rock": {
 	  "Id": "basic_rock",
 	  "Name": "Rock",
-	  "Description": "A basic rock. Deals 6 damage on win.",
+	  "Description": "A basic rock. Win: 9 damage. Draw: 6 damage. Loss: 3 damage.",
 	  "Attributes": ["Rock"],
 	  "Evolved": false,
 	  "Rarity": "Starter",
 	  "Cost": 0,
 	  "Effect": {
-		"EffectType": "basic_damage",
+		"EffectType": "standard",
 		"ThrowType": "rock",
-		"BaseDamage": 6,
+		"BaseStats": {
+		  "Damage": 6,
+		  "Block": 0,
+		  "Heal": 0,
+		  "Lifesteal": 0
+		},
 		"Parameters": {}
 	  }
 	},
 	"basic_paper": {
 	  "Id": "basic_paper",
 	  "Name": "Paper",
-	  "Description": "A basic paper. Deals 6 damage on win.",
+	  "Description": "A basic paper. Win: 9 damage. Draw: 6 damage. Loss: 3 damage.",
 	  "Attributes": ["Paper"],
 	  "Evolved": false,
 	  "Rarity": "Starter",
 	  "Cost": 0,
 	  "Effect": {
-		"EffectType": "basic_damage",
+		"EffectType": "standard",
 		"ThrowType": "paper",
-		"BaseDamage": 6,
+		"BaseStats": {
+		  "Damage": 6,
+		  "Block": 0,
+		  "Heal": 0,
+		  "Lifesteal": 0
+		},
 		"Parameters": {}
 	  }
 	},
 	"basic_scissors": {
 	  "Id": "basic_scissors",
 	  "Name": "Scissors",
-	  "Description": "Basic scissors. Deals 6 damage on win.",
+	  "Description": "Basic scissors. Win: 9 damage. Draw: 6 damage. Loss: 3 damage.",
 	  "Attributes": ["Scissors"],
 	  "Evolved": false,
 	  "Rarity": "Starter",
 	  "Cost": 0,
 	  "Effect": {
-		"EffectType": "basic_damage",
+		"EffectType": "standard",
 		"ThrowType": "scissors",
-		"BaseDamage": 6,
+		"BaseStats": {
+		  "Damage": 6,
+		  "Block": 0,
+		  "Heal": 0,
+		  "Lifesteal": 0
+		},
 		"Parameters": {}
 	  }
 	},
@@ -65,88 +80,107 @@
 	"safety_scissors": {
 	  "Id": "safety_scissors",
 	  "Name": "Safety Scissors",
-	  "Description": "Blocks 3 damage when you lose. Deals 6 damage on win.",
+	  "Description": "Win: 9 damage, 4 block. Draw: 6 damage, 3 block. Loss: 3 damage, 2 block.",
 	  "Attributes": ["Scissors"],
 	  "Evolved": false,
 	  "Rarity": "Common",
 	  "Cost": 50,
 	  "Effect": {
-		"EffectType": "defensive",
+		"EffectType": "standard",
 		"ThrowType": "scissors",
-		"BaseDamage": 6,
-		"Parameters": {
-		  "block_amount": 3
-		}
+		"BaseStats": {
+		  "Damage": 6,
+		  "Block": 3,
+		  "Heal": 0,
+		  "Lifesteal": 0
+		},
+		"Parameters": {}
 	  }
 	},
 	"stone_shield": {
 	  "Id": "stone_shield",
 	  "Name": "Stone Shield",
-	  "Description": "Blocks 4 damage when you lose. Deals 5 damage on win.",
+	  "Description": "Win: 8 damage, 6 block. Draw: 5 damage, 4 block. Loss: 3 damage, 2 block.",
 	  "Attributes": ["Rock"],
 	  "Evolved": false,
 	  "Rarity": "Common",
 	  "Cost": 50,
 	  "Effect": {
-		"EffectType": "defensive",
+		"EffectType": "standard",
 		"ThrowType": "rock",
-		"BaseDamage": 5,
-		"Parameters": {
-		  "block_amount": 4
-		}
+		"BaseStats": {
+		  "Damage": 5,
+		  "Block": 4,
+		  "Heal": 0,
+		  "Lifesteal": 0
+		},
+		"Parameters": {}
 	  }
 	},
 	"vampire_scissors": {
 	  "Id": "vampire_scissors",
 	  "Name": "Vampire Scissors",
-	  "Description": "Deals 8 damage on win. Heals for 50% of damage dealt.",
+	  "Description": "Win: 12 damage, heals 50% of damage dealt. Draw: 8 damage. Loss: 4 damage.",
 	  "Attributes": ["Scissors"],
 	  "Evolved": false,
 	  "Rarity": "Rare",
 	  "Cost": 150,
 	  "Effect": {
-		"EffectType": "lifesteal",
+		"EffectType": "standard",
 		"ThrowType": "scissors",
-		"BaseDamage": 8,
-		"Parameters": {
-		  "heal_percent": 50
-		}
+		"BaseStats": {
+		  "Damage": 8,
+		  "Block": 0,
+		  "Heal": 0,
+		  "Lifesteal": 50
+		},
+		"Parameters": {}
 	  }
 	},
 	"iron_ball": {
 	  "Id": "iron_ball",
 	  "Name": "Iron Ball",
-	  "Description": "A heavy iron ball. Deals 9 damage on win. Has double Rock synergy.",
+	  "Description": "A heavy iron ball. Win: 14 damage. Draw: 9 damage. Loss: 5 damage. Has double Rock synergy.",
 	  "Attributes": ["Rock", "Rock"],
 	  "Evolved": false,
 	  "Rarity": "Uncommon",
 	  "Cost": 75,
 	  "Effect": {
-		"EffectType": "basic_damage",
+		"EffectType": "standard",
 		"ThrowType": "rock",
-		"BaseDamage": 9,
+		"BaseStats": {
+		  "Damage": 9,
+		  "Block": 0,
+		  "Heal": 0,
+		  "Lifesteal": 0
+		},
 		"Parameters": {}
 	  }
 	},
 	"origami": {
 	  "Id": "origami",
 	  "Name": "Origami",
-	  "Description": "Folded paper art. Deals 5-15 damage on win. Has both Paper and Scissors synergy.",
+	  "Description": "Folded paper art. Win: 15 damage. Draw: 10 damage. Loss: 5 damage. Has both Paper and Scissors synergy.",
 	  "Attributes": ["Paper", "Scissors"],
 	  "Evolved": false,
 	  "Rarity": "Common",
 	  "Cost": 50,
 	  "Effect": {
-		"EffectType": "basic_damage",
+		"EffectType": "standard",
 		"ThrowType": "paper",
-		"BaseDamage": 10,
+		"BaseStats": {
+		  "Damage": 10,
+		  "Block": 0,
+		  "Heal": 0,
+		  "Lifesteal": 0
+		},
 		"Parameters": {}
 	  }
 	},
 	"shale": {
 	  "Id": "shale",
 	  "Name": "Shale",
-	  "Description": "Fragile rock. Takes 2x damage from rock, 0.5x from scissors. Breaks into Shale Shards if hit by rock or paper.",
+	  "Description": "Fragile rock. Always loses but takes variable damage. Transforms to Shale Shards on hit.",
 	  "Attributes": ["Rock"],
 	  "Evolved": false,
 	  "Rarity": "Uncommon",
@@ -161,7 +195,7 @@
 	"shale_shards": {
 	  "Id": "shale_shards",
 	  "Name": "Shale Shards",
-	  "Description": "Broken shale fragments. Deals 2x damage to paper and scissors. Takes 2x damage from rock.",
+	  "Description": "Broken shale fragments. Beats paper and scissors, loses to rock. Deals 2x damage.",
 	  "Attributes": ["Rock"],
 	  "Evolved": false,
 	  "Rarity": "Starter",
@@ -176,7 +210,7 @@
 	"uranium": {
 	  "Id": "uranium",
 	  "Name": "Uranium",
-	  "Description": "Radioactive rock. Deals no damage but applies 1 radioactive counter (deals 1 damage per turn per stack).",
+	  "Description": "Radioactive rock. Applies 1 radioactive counter to enemy (deals damage each turn).",
 	  "Attributes": ["Rock"],
 	  "Evolved": false,
 	  "Rarity": "Rare",

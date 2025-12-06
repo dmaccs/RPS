@@ -14,8 +14,13 @@ public partial class Enemy : Node2D
     public bool isBoss = false;
     public string BehaviorName => enemyData?.behavior;
 
-    // Status effects tracking (e.g., radioactive, poison, stun)
+    // Status effects tracking (e.g., radioactive, poison, stun, vulnerable)
     private Dictionary<string, int> statusEffects = new Dictionary<string, int>();
+
+    // Trapped state - when trapped, enemy attacks the trap instead of player
+    private int trapHealth = 0;
+    public bool IsTrapped => trapHealth > 0;
+    public int TrapHealth => trapHealth;
 
     private Label nameLabel;
 
@@ -205,5 +210,76 @@ public partial class Enemy : Node2D
     public Dictionary<string, int> GetAllStatusEffects()
     {
         return new Dictionary<string, int>(statusEffects);
+    }
+
+    // Get damage multiplier from status effects (vulnerable increases damage taken)
+    public float GetDamageMultiplier()
+    {
+        float multiplier = 1.0f;
+
+        // Vulnerable: +50% damage per stack
+        if (statusEffects.TryGetValue("vulnerable", out int vulnerableStacks) && vulnerableStacks > 0)
+        {
+            multiplier += vulnerableStacks * 0.5f;
+        }
+
+        return multiplier;
+    }
+
+    // Process status effect durations (called at end of round)
+    public void ProcessStatusDurations()
+    {
+        var toRemove = new List<string>();
+
+        // Vulnerable decreases by 1 each turn
+        if (statusEffects.TryGetValue("vulnerable", out int vulnerableStacks) && vulnerableStacks > 0)
+        {
+            statusEffects["vulnerable"] = vulnerableStacks - 1;
+            if (statusEffects["vulnerable"] <= 0)
+            {
+                toRemove.Add("vulnerable");
+                GD.Print($"{GetDisplayName()} is no longer vulnerable");
+            }
+            else
+            {
+                GD.Print($"{GetDisplayName()} vulnerable reduced to {statusEffects["vulnerable"]}");
+            }
+        }
+
+        foreach (var effect in toRemove)
+        {
+            statusEffects.Remove(effect);
+        }
+    }
+
+    // Apply trapped status - enemy must break free by dealing damage to trap
+    public void ApplyTrapped(int health)
+    {
+        trapHealth = health;
+        GD.Print($"{GetDisplayName()} is trapped! Trap health: {trapHealth}");
+    }
+
+    // Damage the trap - returns true if trap is broken
+    public bool DamageTrap(int damage)
+    {
+        if (!IsTrapped) return false;
+
+        trapHealth -= damage;
+        GD.Print($"Trap took {damage} damage. Remaining: {trapHealth}");
+
+        if (trapHealth <= 0)
+        {
+            trapHealth = 0;
+            GD.Print($"{GetDisplayName()} broke free from the trap!");
+            return true;
+        }
+        return false;
+    }
+
+    // Clear trapped state
+    public void ClearTrapped()
+    {
+        trapHealth = 0;
+        GD.Print($"{GetDisplayName()} trap cleared");
     }
 }

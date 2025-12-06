@@ -90,17 +90,4 @@ namespace Rps
             return Attributes.Count(a => a == attr);
         }
     }
-
-    // DEPRECATED: Keep for backward compatibility during migration
-    public class MoveData
-    {
-        public Throws Type { get; private set; }
-        public int Level { get; set; }
-
-        public MoveData(Throws type, int level = 1)
-        {
-            Type = type;
-            Level = level;
-        }
-    }
 }

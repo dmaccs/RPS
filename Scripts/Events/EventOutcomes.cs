@@ -92,7 +92,7 @@ public class AddRelicOutcome : IEventOutcome
     }
 }
 
-// Upgrade a specific move
+// Upgrade a specific move by throw type
 public class UpgradeMoveOutcome : IEventOutcome
 {
     public void Apply(Player player, EventOutcomeData data)
@@ -106,9 +106,18 @@ public class UpgradeMoveOutcome : IEventOutcome
         // Parse throw type from string
         if (Enum.TryParse<Rps.Throws>(data.TargetMove, true, out var throwType))
         {
-            for (int i = 0; i < data.Amount; i++)
+            // Find equipped throw matching this type
+            for (int i = 0; i < player.EquippedThrows.Length; i++)
             {
-                player.UpgradeThrow(throwType);
+                var throwData = player.EquippedThrows[i];
+                if (throwData?.Effect.ThrowType == throwType)
+                {
+                    for (int j = 0; j < data.Amount; j++)
+                    {
+                        player.UpgradeEquippedThrow(i);
+                    }
+                    break;
+                }
             }
             GameState.Instance.RefreshUI();
         }
@@ -125,7 +134,7 @@ public class UpgradeMoveOutcome : IEventOutcome
     }
 }
 
-// Downgrade a specific move
+// Downgrade a specific move by throw type
 public class DowngradeMoveOutcome : IEventOutcome
 {
     public void Apply(Player player, EventOutcomeData data)
@@ -139,13 +148,16 @@ public class DowngradeMoveOutcome : IEventOutcome
         // Parse throw type from string
         if (Enum.TryParse<Rps.Throws>(data.TargetMove, true, out var throwType))
         {
-            // Find the move and reduce its level
-            var move = player.CurrentThrows.FirstOrDefault(m => m.Type == throwType);
-            if (move != null)
+            // Find equipped throw matching this type and reduce its damage
+            for (int i = 0; i < player.EquippedThrows.Length; i++)
             {
-                int newLevel = Math.Max(1, move.Level - data.Amount);
-                move.Level = newLevel;
-                GameState.Instance.RefreshUI();
+                var throwData = player.EquippedThrows[i];
+                if (throwData?.Effect.ThrowType == throwType)
+                {
+                    throwData.Effect.BaseDamage = Math.Max(1, throwData.Effect.BaseDamage - data.Amount);
+                    GameState.Instance.RefreshUI();
+                    break;
+                }
             }
         }
         else
@@ -161,16 +173,19 @@ public class DowngradeMoveOutcome : IEventOutcome
     }
 }
 
-// Upgrade all moves
+// Upgrade all equipped moves
 public class UpgradeAllMovesOutcome : IEventOutcome
 {
     public void Apply(Player player, EventOutcomeData data)
     {
-        foreach (var move in player.CurrentThrows)
+        for (int i = 0; i < player.EquippedThrows.Length; i++)
         {
-            for (int i = 0; i < data.Amount; i++)
+            if (player.EquippedThrows[i] != null)
             {
-                player.UpgradeThrow(move.Type);
+                for (int j = 0; j < data.Amount; j++)
+                {
+                    player.UpgradeEquippedThrow(i);
+                }
             }
         }
         GameState.Instance.RefreshUI();

@@ -5,10 +5,15 @@ public partial class GameState : Node
 {
     public static GameState Instance { get; private set; }
 
+    // Starting values - configurable per difficulty/character
+    public int StartingHealth { get; set; } = 90;
+    public int StartingMaxHealth { get; set; } = 90;
+    public int StartingGold { get; set; } = 25;
+    public int DefaultScore { get; set; } = 100;
+
     // Player stats
     public int PlayerHealth { get; private set; } = 90;
     public int MaxPlayerHealth { get; private set; } = 90;
-    // No global player strength; move strength is tracked per MoveData
     public int PlayerGold { get; private set; } = 25;
 
     // Game over tracking
@@ -61,8 +66,6 @@ public partial class GameState : Node
         PlayerHealth = Mathf.Min(PlayerHealth, MaxPlayerHealth);
         UpdateUI();
     }
-
-    // Remove ModifyStrength — move levels are changed on Player.CurrentThrows and should call RefreshUI
 
     public void AddGold(int amount)
     {
@@ -224,16 +227,16 @@ public partial class GameState : Node
     // Reset game state for new run
     public void ResetGame()
     {
-        PlayerHealth = 10;
-        MaxPlayerHealth = 10;
-        PlayerGold = 50;
+        PlayerHealth = StartingHealth;
+        MaxPlayerHealth = StartingMaxHealth;
+        PlayerGold = StartingGold;
         items.Clear();
         relics.Clear();
         seenRelics.Clear();
         temporaryBuffs.Clear();
         permanentBuffs.Clear();
         LastKillerName = "";
-        LastScore = 100;
+        LastScore = DefaultScore;
         UpdateUI();
     }
 }
