@@ -179,48 +179,38 @@ namespace Rps
         }
     }
 
-    // Shale - Always loses, but with different damage multipliers. Transforms to ShaleShards on loss to rock/paper.
+    // Shale - Always loses, but with different damage multipliers. Transforms to ShaleShards on loss to rock/scissors.
     public class ShaleEffect : BaseThrowEffect
     {
         public override Throws GetThrowType(ThrowData throwData)
         {
-            return Throws.rock; // Only used as fallback, custom outcome overrides
+            return Throws.rock;
         }
 
-        // Shale always loses - custom RPS rules
         public override RoundOutcome? GetCustomOutcome(ThrowData throwData, Throws enemyThrow)
         {
-            // Shale loses to everything
-            return RoundOutcome.EnemyWin;
+            return RoundOutcome.EnemyWin; // Shale always loses
         }
 
         public override ThrowStats CalculateStats(ThrowContext context, float outcomeMultiplier)
         {
-            var stats = new ThrowStats
-            {
-                Damage = 0, // Shale does no damage (always loses)
-                Block = 0
-            };
+            var stats = new ThrowStats { Damage = 0, Block = 0 };
 
-            // Custom damage multipliers based on what beat us
             switch (context.EnemyThrow)
             {
                 case Throws.rock:
-                    // Loses to rock - take 2x damage, transform to ShaleShards
                     stats.IncomingDamageMultiplier = 2.0f;
                     stats.TransformToThrowId = "shale_shards";
                     stats.SpecialMessage = "Shale crumbles into shards!";
                     break;
-                case Throws.paper:
-                    // Loses to paper - take 1x damage, transform to ShaleShards
+                case Throws.scissors:
                     stats.IncomingDamageMultiplier = 1.0f;
                     stats.TransformToThrowId = "shale_shards";
-                    stats.SpecialMessage = "Shale breaks apart!";
+                    stats.SpecialMessage = "Shale shatters!";
                     break;
-                case Throws.scissors:
-                    // Loses to scissors - take 0.5x damage, no transformation
+                case Throws.paper:
                     stats.IncomingDamageMultiplier = 0.5f;
-                    stats.SpecialMessage = "Shale resists the scissors!";
+                    stats.SpecialMessage = "Shale resists the paper!";
                     break;
             }
 

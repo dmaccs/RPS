@@ -180,7 +180,7 @@
 	"shale": {
 	  "Id": "shale",
 	  "Name": "Shale",
-	  "Description": "Fragile rock. Always loses but takes variable damage. Transforms to Shale Shards on hit.",
+	  "Description": "Fragile rock. Always loses. Transforms to Shale Shards when hit by rock or scissors.",
 	  "Attributes": ["Rock"],
 	  "Evolved": false,
 	  "Rarity": "Uncommon",

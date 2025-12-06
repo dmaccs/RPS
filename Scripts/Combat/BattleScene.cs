@@ -216,31 +216,22 @@ public partial class BattleScene : Control
 				break;
 		}
 
-		// Set damage text
-		string damageText;
+		// Set damage text - both sides can take damage each round
+		var damageLines = new List<string>();
+
 		if (result.DamageDealt > 0)
-		{
-			if (result.DamageTarget == "enemy")
-			{
-				damageText = $"Enemy takes {result.DamageDealt} damage!";
-			}
-			else
-			{
-				damageText = $"You take {result.DamageDealt} damage!";
-			}
-		}
-		else
-		{
-			damageText = "No damage!";
-		}
+			damageLines.Add($"Enemy takes {result.DamageDealt} damage!");
 
-		// Add heal amount if present
+		if (result.DamageTaken > 0)
+			damageLines.Add($"You take {result.DamageTaken} damage!");
+
 		if (result.HealAmount > 0)
-		{
-			damageText += $"\nYou heal {result.HealAmount} HP!";
-		}
+			damageLines.Add($"You heal {result.HealAmount} HP!");
 
-		damageLabel.Text = damageText;
+		if (damageLines.Count == 0)
+			damageLines.Add("No damage!");
+
+		damageLabel.Text = string.Join("\n", damageLines);
 
 		// Show special message from effect if present
 		if (specialMessageLabel != null)

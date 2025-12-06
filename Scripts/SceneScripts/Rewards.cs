@@ -232,54 +232,22 @@ public partial class Rewards : Control
     private void UpdateSlotSelectionButtons()
     {
         var player = GameManager.Instance.Player;
-        bool hasEmptySlot = HasAnyEmptySlot();
 
-        // Update equipped slot buttons
+        // Update equipped slot buttons - all enabled
         for (int i = 0; i < 3; i++)
         {
             var throwData = player.EquippedThrows[i];
-            if (throwData != null)
-            {
-                slotButtons[i].Text = throwData.Name;
-                // Disable occupied slots if there are empty slots available
-                slotButtons[i].Disabled = hasEmptySlot;
-            }
-            else
-            {
-                slotButtons[i].Text = "(Empty)";
-                slotButtons[i].Disabled = false;
-            }
+            slotButtons[i].Text = throwData != null ? throwData.Name : "(Empty)";
+            slotButtons[i].Disabled = false;
         }
 
-        // Update inventory slot buttons
+        // Update inventory slot buttons - all enabled
         for (int i = 0; i < 3; i++)
         {
             var throwData = player.InventoryThrows[i];
-            if (throwData != null)
-            {
-                slotButtons[i + 3].Text = throwData.Name;
-                // Disable occupied slots if there are empty slots available
-                slotButtons[i + 3].Disabled = hasEmptySlot;
-            }
-            else
-            {
-                slotButtons[i + 3].Text = "(Empty)";
-                slotButtons[i + 3].Disabled = false;
-            }
+            slotButtons[i + 3].Text = throwData != null ? throwData.Name : "(Empty)";
+            slotButtons[i + 3].Disabled = false;
         }
-    }
-
-    private bool HasAnyEmptySlot()
-    {
-        var player = GameManager.Instance.Player;
-
-        for (int i = 0; i < 3; i++)
-        {
-            if (player.EquippedThrows[i] == null) return true;
-            if (player.InventoryThrows[i] == null) return true;
-        }
-
-        return false;
     }
 
     public override void _Process(double delta)
@@ -380,27 +348,26 @@ public partial class Rewards : Control
 
     private void UpdateRewardButtonStates()
     {
-        // Disable throw button if already claimed
-        if (throwRewardClaimed)
+        // Either reward claimed disables both (it's an OR choice)
+        bool rewardClaimed = throwRewardClaimed || randomRewardClaimed;
+
+        if (rewardClaimed)
         {
             button1.Disabled = true;
-            button1.Text = "Throw claimed";
-        }
-
-        // Check if random reward is an item and inventory is full
-        if (randomRewardClaimed)
-        {
+            button1.Text = throwRewardClaimed ? "Throw claimed" : "Get a new throw";
             button2.Disabled = true;
-            button2.Text = "Reward claimed";
+            button2.Text = randomRewardClaimed ? "Reward claimed" : GetRandomRewardDescription();
         }
-        else if (randomRewardType == RewardType.Item)
+        else
         {
-            bool inventoryFull = GameState.Instance.GetItems().Count >= 3;
-            button2.Disabled = inventoryFull;
-
-            // Update button text to show inventory status
-            string baseText = GetRandomRewardDescription();
-            button2.Text = inventoryFull ? baseText + " (Inventory Full)" : baseText;
+            // Neither claimed yet - check item inventory
+            if (randomRewardType == RewardType.Item)
+            {
+                bool inventoryFull = GameState.Instance.GetItems().Count >= 3;
+                button2.Disabled = inventoryFull;
+                string baseText = GetRandomRewardDescription();
+                button2.Text = inventoryFull ? baseText + " (Inventory Full)" : baseText;
+            }
         }
     }
 
@@ -650,21 +617,57 @@ public partial class Rewards : Control
 
         if (existingThrow != null)
         {
-            // Slot is occupied - this should only happen when all slots are full
-            // Show confirmation dialog
-            throwToReplace = existingThrow;
-            pendingSlotIndex = slotIndex;
-            pendingSlotIsEquipped = isEquipped;
+            // Slot is occupied - try to find an empty slot to move existing throw
+            var (emptySlotIndex, emptySlotIsEquipped) = FindEmptySlot();
+            if (emptySlotIndex != -1)
+            {
+                // Move existing throw to empty slot, place new throw here
+                if (emptySlotIsEquipped)
+                    player.SetEquippedSlot(emptySlotIndex, existingThrow);
+                else
+                    player.SetInventorySlot(emptySlotIndex, existingThrow);
 
-            confirmationLabel.Text = $"Are you sure you want to remove \"{existingThrow.Name}\"?";
-            slotSelectionPanel.Visible = false;
-            confirmationPanel.Visible = true;
+                PlaceThrowInSlot(slotIndex, isEquipped);
+                GD.Print($"Moved {existingThrow.Name} to {(emptySlotIsEquipped ? "equipped" : "inventory")} slot {emptySlotIndex}");
+            }
+            else
+            {
+                // No empty slots - show confirmation to discard
+                throwToReplace = existingThrow;
+                pendingSlotIndex = slotIndex;
+                pendingSlotIsEquipped = isEquipped;
+
+                confirmationLabel.Text = $"No empty slots! Remove \"{existingThrow.Name}\" permanently?";
+                slotSelectionPanel.Visible = false;
+                confirmationPanel.Visible = true;
+            }
         }
         else
         {
             // Slot is empty, place directly
             PlaceThrowInSlot(slotIndex, isEquipped);
         }
+    }
+
+    private (int slotIndex, bool isEquipped) FindEmptySlot()
+    {
+        var player = GameManager.Instance.Player;
+
+        // Check inventory first (more likely to want to keep equipped slots)
+        for (int i = 0; i < 3; i++)
+        {
+            if (player.InventoryThrows[i] == null)
+                return (i, false);
+        }
+
+        // Then check equipped
+        for (int i = 0; i < 3; i++)
+        {
+            if (player.EquippedThrows[i] == null)
+                return (i, true);
+        }
+
+        return (-1, false);
     }
 
     private void OnConfirmReplace()
