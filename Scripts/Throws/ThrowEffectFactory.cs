@@ -23,6 +23,10 @@ namespace Rps
                 "synergy_damage" => new SynergyDamageEffect(),
                 "defensive" => new DefensiveEffect(),
                 "lifesteal" => new LifestealEffect(),
+                "shale" => new ShaleEffect(),
+                "shale_shards" => new ShaleShardsEffect(),
+                "uranium" => new UraniumEffect(),
+                "grievances" => new GrievancesEffect(),
                 _ => new BasicDamageEffect()  // Fallback to basic damage
             };
 

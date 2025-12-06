@@ -113,12 +113,64 @@ public partial class BattleScene : Control
 			return;
 
 		var throwData = player.EquippedThrows[index];
-		GD.Print($"You threw: {throwData.Name}");
+
+		// Get the effective throw (accounting for transformations)
+		var effectiveThrow = battleManager.GetEffectiveThrowData(throwData);
+		GD.Print($"You threw: {effectiveThrow.Name}");
 
 		var result = battleManager.ResolveRound(throwData);
 		ShowCombatFeedback(result);
 
+		// Refresh throw buttons to show any transformations
+		RefreshThrowButtonLabels();
+
 		CheckPlayerDeath();
+	}
+
+	protected void RefreshThrowButtonLabels()
+	{
+		int buttonIndex = 0;
+		for (int i = 0; i < 3; i++)
+		{
+			var throwData = player.EquippedThrows[i];
+			if (throwData != null && buttonIndex < throwButtons.Count)
+			{
+				var button = throwButtons[buttonIndex];
+
+				// Get the effective throw data (accounting for transformations)
+				var effectiveThrow = battleManager.GetEffectiveThrowData(throwData);
+
+				// Update the label
+				var label = button.GetNodeOrNull<Label>("Label");
+				if (label == null)
+				{
+					// Try to find label by iterating children
+					foreach (var child in button.GetChildren())
+					{
+						if (child is Label l)
+						{
+							label = l;
+							break;
+						}
+					}
+				}
+
+				if (label != null && effectiveThrow != null)
+				{
+					label.Text = effectiveThrow.Name;
+				}
+
+				// Update the texture if the throw type changed
+				if (effectiveThrow != null)
+				{
+					var effect = ThrowEffectFactory.Create(effectiveThrow.Effect.EffectType);
+					Throws throwType = effect.GetThrowType(effectiveThrow);
+					button.TextureNormal = LoadThrowTexture(throwType);
+				}
+
+				buttonIndex++;
+			}
+		}
 	}
 
 	protected void CheckPlayerDeath()

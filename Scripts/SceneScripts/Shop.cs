@@ -2,6 +2,7 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Rps;
 
 public partial class Shop : Control
 {
@@ -14,7 +15,17 @@ public partial class Shop : Control
 		public ItemData ItemData;
 	}
 
+	private struct ThrowShopSlot
+	{
+		public Button Button;
+		public Label CostLabel;
+		public Label ErrorLabel;
+		public Timer ErrorTimer;
+		public ThrowData ThrowData;
+	}
+
 	private List<ShopSlot> shopSlots = new();
+	private List<ThrowShopSlot> throwSlots = new();
 	private Button exitButton;
 
 	// Tooltip elements
@@ -50,10 +61,13 @@ public partial class Shop : Control
 			shopSlots.Add(slot);
 		}
 
+		// Create throw slots dynamically
+		CreateThrowSlots();
+
 		exitButton = GetNode<Button>("VBoxContainer/Button");
 		exitButton.Pressed += OnExitPressed;
 
-		// Populate shop with random items
+		// Populate shop with random items and throws
 		PopulateShop();
 
 		// Connect purchase buttons
@@ -61,6 +75,67 @@ public partial class Shop : Control
 		{
 			int index = i; // Capture for lambda
 			shopSlots[i].Button.Pressed += () => PurchaseItem(index);
+		}
+
+		for (int i = 0; i < throwSlots.Count; i++)
+		{
+			int index = i; // Capture for lambda
+			throwSlots[i].Button.Pressed += () => PurchaseThrow(index);
+		}
+	}
+
+	private void CreateThrowSlots()
+	{
+		var vbox = GetNode<VBoxContainer>("VBoxContainer");
+
+		// Add a separator label
+		var throwLabel = new Label();
+		throwLabel.Text = "-- Throws --";
+		vbox.AddChild(throwLabel);
+		vbox.MoveChild(throwLabel, vbox.GetChildCount() - 1);
+
+		// Create 2 throw slots
+		for (int i = 0; i < 2; i++)
+		{
+			var hbox = new HBoxContainer();
+
+			var costLabel = new Label();
+			costLabel.Text = "0g";
+
+			var button = new Button();
+			button.Text = "Throw";
+
+			var errorLabel = new Label();
+			errorLabel.Text = "Not enough gold!";
+			errorLabel.Visible = false;
+			errorLabel.Modulate = new Color(1, 0.3f, 0.3f, 1);
+
+			hbox.AddChild(costLabel);
+			hbox.AddChild(button);
+			hbox.AddChild(errorLabel);
+
+			vbox.AddChild(hbox);
+			vbox.MoveChild(hbox, vbox.GetChildCount() - 1);
+
+			var slot = new ThrowShopSlot
+			{
+				Button = button,
+				CostLabel = costLabel,
+				ErrorLabel = errorLabel,
+				ErrorTimer = new Timer()
+			};
+
+			slot.ErrorTimer.WaitTime = 2.0;
+			slot.ErrorTimer.OneShot = true;
+			int slotIndex = i;
+			slot.ErrorTimer.Timeout += () => {
+				var s = throwSlots[slotIndex];
+				s.ErrorLabel.Visible = false;
+				throwSlots[slotIndex] = s;
+			};
+			AddChild(slot.ErrorTimer);
+
+			throwSlots.Add(slot);
 		}
 	}
 
@@ -104,6 +179,23 @@ public partial class Shop : Control
 			{
 				GameState.Instance.MarkRelicAsSeen(selectedItems[i].Id);
 			}
+		}
+
+		// Populate throw slots
+		PopulateThrowSlots();
+	}
+
+	private void PopulateThrowSlots()
+	{
+		var selectedThrows = ThrowDatabase.Instance.SelectRandomThrowsByRarity(2, RngManager.Instance?.Rng);
+
+		for (int i = 0; i < throwSlots.Count && i < selectedThrows.Count; i++)
+		{
+			var slot = throwSlots[i];
+			slot.ThrowData = selectedThrows[i];
+			slot.Button.Text = $"{selectedThrows[i].Name} ({selectedThrows[i].Rarity})";
+			slot.CostLabel.Text = $"{selectedThrows[i].Cost}g";
+			throwSlots[i] = slot;
 		}
 	}
 
@@ -220,6 +312,85 @@ public partial class Shop : Control
 		shopSlots[slotIndex] = slot;
 	}
 
+	private void PurchaseThrow(int slotIndex)
+	{
+		if (slotIndex < 0 || slotIndex >= throwSlots.Count)
+			return;
+
+		var slot = throwSlots[slotIndex];
+
+		if (slot.ThrowData == null)
+		{
+			GD.Print("No throw in this slot");
+			return;
+		}
+
+		// Check if player has enough gold
+		if (GameState.Instance.PlayerGold < slot.ThrowData.Cost)
+		{
+			GD.Print("Not enough gold!");
+			ShowThrowErrorMessage(slotIndex);
+			return;
+		}
+
+		var player = GameManager.Instance.Player;
+		var throwInstance = ThrowDatabase.Instance.CreateInstance(slot.ThrowData.Id);
+
+		// Try to add to inventory first, then equipped if inventory full
+		bool added = false;
+		for (int i = 0; i < player.InventoryThrows.Length; i++)
+		{
+			if (player.InventoryThrows[i] == null)
+			{
+				player.SetInventorySlot(i, throwInstance);
+				added = true;
+				break;
+			}
+		}
+
+		if (!added)
+		{
+			// Inventory full, try equipped slots
+			for (int i = 0; i < player.EquippedThrows.Length; i++)
+			{
+				if (player.EquippedThrows[i] == null)
+				{
+					player.SetEquippedSlot(i, throwInstance);
+					added = true;
+					break;
+				}
+			}
+		}
+
+		if (!added)
+		{
+			GD.Print("No space for new throw!");
+			ShowThrowErrorMessage(slotIndex, "Throws full!");
+			return;
+		}
+
+		// Deduct gold after successful addition
+		GameState.Instance.AddGold(-slot.ThrowData.Cost);
+		GD.Print($"Purchased throw: {slot.ThrowData.Name}");
+		GameState.Instance.RefreshUI();
+
+		// Disable button after purchase
+		slot.Button.Disabled = true;
+		slot.Button.Text = "[SOLD]";
+	}
+
+	private void ShowThrowErrorMessage(int slotIndex, string message = "Not enough gold!")
+	{
+		if (slotIndex < 0 || slotIndex >= throwSlots.Count)
+			return;
+
+		var slot = throwSlots[slotIndex];
+		slot.ErrorLabel.Text = message;
+		slot.ErrorLabel.Visible = true;
+		slot.ErrorTimer.Start();
+		throwSlots[slotIndex] = slot;
+	}
+
 	private void CreateTooltipPanel()
 	{
 		// Create tooltip panel
@@ -250,6 +421,7 @@ public partial class Shop : Control
 		Vector2 mousePos = GetGlobalMousePosition();
 		bool hovering = false;
 
+		// Check item slots
 		for (int i = 0; i < shopSlots.Count; i++)
 		{
 			var slot = shopSlots[i];
@@ -266,6 +438,25 @@ public partial class Shop : Control
 			}
 		}
 
+		// Check throw slots
+		if (!hovering)
+		{
+			for (int i = 0; i < throwSlots.Count; i++)
+			{
+				var slot = throwSlots[i];
+				if (slot.Button != null && slot.ThrowData != null && IsInstanceValid(slot.Button))
+				{
+					Rect2 buttonRect = slot.Button.GetGlobalRect();
+					if (buttonRect.HasPoint(mousePos))
+					{
+						ShowThrowTooltip(slot.ThrowData, mousePos);
+						hovering = true;
+						break;
+					}
+				}
+			}
+		}
+
 		if (!hovering)
 		{
 			HideTooltip();
@@ -278,6 +469,31 @@ public partial class Shop : Control
 			return;
 
 		tooltipLabel.Text = itemData.Description;
+		tooltipPanel.Visible = true;
+
+		// Position tooltip near mouse
+		tooltipPanel.Position = mousePos + new Vector2(15, 15);
+
+		// Keep tooltip on screen
+		Vector2 viewportSize = GetViewportRect().Size;
+		Vector2 tooltipSize = tooltipPanel.Size;
+
+		if (tooltipPanel.Position.X + tooltipSize.X > viewportSize.X)
+		{
+			tooltipPanel.Position = new Vector2(tooltipPanel.Position.X - tooltipSize.X - 30, tooltipPanel.Position.Y);
+		}
+		if (tooltipPanel.Position.Y + tooltipSize.Y > viewportSize.Y)
+		{
+			tooltipPanel.Position = new Vector2(tooltipPanel.Position.X, tooltipPanel.Position.Y - tooltipSize.Y - 30);
+		}
+	}
+
+	private void ShowThrowTooltip(ThrowData throwData, Vector2 mousePos)
+	{
+		if (throwData == null)
+			return;
+
+		tooltipLabel.Text = $"{throwData.Name} ({throwData.Rarity})\n{throwData.Description}";
 		tooltipPanel.Visible = true;
 
 		// Position tooltip near mouse
@@ -319,7 +535,7 @@ public partial class Shop : Control
 			exitButton.Pressed -= OnExitPressed;
 		}
 
-		// Clean up error timers
+		// Clean up item slot error timers
 		foreach (var slot in shopSlots)
 		{
 			if (slot.ErrorTimer != null && IsInstanceValid(slot.ErrorTimer))
@@ -329,8 +545,15 @@ public partial class Shop : Control
 			}
 		}
 
-		// Note: We can't easily disconnect lambda signals, but the buttons will be freed anyway
-		// The struct's buttons are part of the scene tree and will be properly freed
+		// Clean up throw slot error timers
+		foreach (var slot in throwSlots)
+		{
+			if (slot.ErrorTimer != null && IsInstanceValid(slot.ErrorTimer))
+			{
+				slot.ErrorTimer.Stop();
+				slot.ErrorTimer.QueueFree();
+			}
+		}
 
 		base._ExitTree();
 	}

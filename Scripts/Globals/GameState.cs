@@ -6,10 +6,10 @@ public partial class GameState : Node
     public static GameState Instance { get; private set; }
 
     // Player stats
-    public int PlayerHealth { get; private set; } = 10;
-    public int MaxPlayerHealth { get; private set; } = 10;
+    public int PlayerHealth { get; private set; } = 90;
+    public int MaxPlayerHealth { get; private set; } = 90;
     // No global player strength; move strength is tracked per MoveData
-    public int PlayerGold { get; private set; } = 5;
+    public int PlayerGold { get; private set; } = 25;
 
     // Game over tracking
     public string LastKillerName { get; set; } = "";

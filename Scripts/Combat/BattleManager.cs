@@ -27,15 +27,56 @@ public class BattleManager
     public List<List<Throws>> EncounterPlayerThrows { get; private set; } = new List<List<Throws>>();
     public List<List<Throws>> EncounterEnemyThrows { get; private set; } = new List<List<Throws>>();
 
+    // Battle-specific state shared across effects
+    public Dictionary<string, object> BattleState { get; private set; } = new Dictionary<string, object>();
+
+    // Track which throws have been transformed this battle (Id -> replacement Id)
+    private Dictionary<string, string> transformedThrows = new Dictionary<string, string>();
+
+    // Player throw history for this battle (ThrowData objects)
+    public List<ThrowData> PlayerThrowDataHistory { get; private set; } = new List<ThrowData>();
+
     public BattleManager(Player player, Enemy enemy)
     {
         this.player = player;
         this.enemy = enemy;
     }
 
+    // Get the effective throw data, accounting for transformations
+    public ThrowData GetEffectiveThrowData(ThrowData original)
+    {
+        if (original == null) return null;
+
+        if (transformedThrows.TryGetValue(original.Id, out string replacementId))
+        {
+            var replacement = ThrowDatabase.Instance.CreateInstance(replacementId);
+            if (replacement != null)
+            {
+                // Copy over the original's state
+                foreach (var kvp in original.State)
+                    replacement.State[kvp.Key] = kvp.Value;
+                return replacement;
+            }
+        }
+        return original;
+    }
+
+    // Apply a transformation for the rest of the battle
+    public void TransformThrow(string originalId, string newId)
+    {
+        transformedThrows[originalId] = newId;
+        GD.Print($"Throw transformed: {originalId} -> {newId}");
+    }
+
     // NEW: Resolve round using ThrowData (new throw system)
     public RoundResult ResolveRound(ThrowData playerThrowData)
     {
+        // Process status effects at the start of the round
+        int statusDamage = enemy.ProcessStatusEffects();
+
+        // Apply any transformations for this battle
+        playerThrowData = GetEffectiveThrowData(playerThrowData);
+
         // Get the effect for this throw
         var effect = ThrowEffectFactory.Create(playerThrowData.Effect.EffectType);
 
@@ -105,9 +146,26 @@ public class BattleManager
         EncounterPlayerThrows.Add(new List<Throws> { playerThrow });
         EncounterEnemyThrows.Add(new List<Throws> { enemyThrow });
 
-        // Determine outcome
-        bool playerWon = DetermineWinner(playerThrow, enemyThrow);
-        if (isBossDraw) playerWon = true;
+        // Determine outcome - check for custom outcome first, then fall back to standard RPS
+        RoundOutcome outcome;
+        var customOutcome = effect.GetCustomOutcome(playerThrowData, enemyThrow);
+        if (customOutcome.HasValue)
+        {
+            outcome = customOutcome.Value;
+            GD.Print($"Custom outcome: {outcome}");
+        }
+        else
+        {
+            bool playerWon = DetermineWinner(playerThrow, enemyThrow);
+            if (isBossDraw) playerWon = true;
+
+            if (playerWon)
+                outcome = RoundOutcome.PlayerWin;
+            else if (playerThrow == enemyThrow)
+                outcome = RoundOutcome.Draw;
+            else
+                outcome = RoundOutcome.EnemyWin;
+        }
 
         // Create context for effect
         var context = new ThrowContext
@@ -115,17 +173,20 @@ public class BattleManager
             Player = player,
             Enemy = enemy,
             Throw = playerThrowData,
+            EnemyThrow = enemyThrow,
             EquippedThrows = player.EquippedThrows,
-            InventoryThrows = player.InventoryThrows
+            InventoryThrows = player.InventoryThrows,
+            PlayerThrowHistory = PlayerThrowDataHistory,
+            BattleState = BattleState
         };
 
         // Apply effect based on outcome
+        result.Outcome = outcome;
+        context.Outcome = outcome;
         ThrowResult effectResult;
 
-        if (playerWon)
+        if (outcome == RoundOutcome.PlayerWin)
         {
-            result.Outcome = RoundOutcome.PlayerWin;
-            context.Outcome = RoundOutcome.PlayerWin;
             effectResult = effect.OnPlayerWin(context);
 
             int totalDamage = effectResult.DamageDealt;
@@ -164,10 +225,8 @@ public class BattleManager
                 GD.Print($"Player healed for {effectResult.HealAmount}");
             }
         }
-        else if (playerThrow != enemyThrow)
+        else if (outcome == RoundOutcome.EnemyWin)
         {
-            result.Outcome = RoundOutcome.EnemyWin;
-            context.Outcome = RoundOutcome.EnemyWin;
             effectResult = effect.OnPlayerLose(context);
 
             int incomingDamage = enemy.strength;
@@ -178,6 +237,13 @@ public class BattleManager
                 int streak = MomentumBehavior.GetCurrentStreak(EncounterPlayerThrows, EncounterEnemyThrows);
                 incomingDamage = MomentumBehavior.GetStreakDamage(streak);
                 GD.Print($"Momentum enemy - enemy streak: {streak}, damage: {incomingDamage}");
+            }
+
+            // Apply incoming damage multiplier from effect
+            if (effectResult.IncomingDamageMultiplier != 1.0f)
+            {
+                incomingDamage = Godot.Mathf.RoundToInt(incomingDamage * effectResult.IncomingDamageMultiplier);
+                GD.Print($"Damage multiplier applied: {effectResult.IncomingDamageMultiplier}x -> {incomingDamage}");
             }
 
             // Apply damage reduction from effect
@@ -191,13 +257,11 @@ public class BattleManager
             result.DamageTarget = "player";
             result.SpecialMessage = effectResult.SpecialMessage;
 
-            GD.Print($"Player lost! Incoming: {enemy.strength}, Blocked: {effectResult.DamageBlocked}, Buff reduction: {buffReduction}, Final: {finalDamage}");
+            GD.Print($"Player lost! Incoming: {enemy.strength}, Multiplier: {effectResult.IncomingDamageMultiplier}, Blocked: {effectResult.DamageBlocked}, Buff reduction: {buffReduction}, Final: {finalDamage}");
             player.Damage(finalDamage);
         }
-        else
+        else // Draw
         {
-            result.Outcome = RoundOutcome.Draw;
-            context.Outcome = RoundOutcome.Draw;
             effectResult = effect.OnDraw(context);
             result.SpecialMessage = effectResult.SpecialMessage;
             GD.Print("Draw - no damage");
@@ -216,9 +280,32 @@ public class BattleManager
             }
         }
 
+        // Apply status effects to enemy
+        if (effectResult.EnemyStatusEffects != null)
+        {
+            foreach (var status in effectResult.EnemyStatusEffects)
+            {
+                enemy.ApplyStatusEffect(status.Type, status.Stacks);
+            }
+        }
+
+        // Handle throw transformation
+        if (!string.IsNullOrEmpty(effectResult.TransformToThrowId))
+        {
+            TransformThrow(playerThrowData.Id, effectResult.TransformToThrowId);
+        }
+
+        // Calculate actual damage dealt/taken for OnAfterRound callback
+        int damageDealtToEnemy = result.DamageTarget == "enemy" ? result.DamageDealt : 0;
+        int damageTakenByPlayer = result.DamageTarget == "player" ? result.DamageDealt : 0;
+
+        // Call OnAfterRound callback for effects that need to react to final values
+        effect.OnAfterRound(context, result.Outcome, damageDealtToEnemy, damageTakenByPlayer);
+
         // Update history
         player.ThrowHistory.Add(playerThrow);
         player.LastThrow = playerThrow;
+        PlayerThrowDataHistory.Add(playerThrowData);
 
         // Decrement buff durations
         GameState.Instance.DecrementBuffDurations();

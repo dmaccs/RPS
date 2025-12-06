@@ -1,72 +1,72 @@
 {
   "RockEnemy": {
 	"displayName": "Brock",
-	"health": 3,
-	"strength": 1,
+	"health": 30,
+	"strength": 5,
 	"throwsPerTurn": 1,
 	"allowedThrows": ["rock", "paper", "scissors"],
 	"frequencies": [80, 10, 10]
   },
   "PaperEnemy": {
 	"displayName": "Brock",
-	"health": 3,
-	"strength": 1,
+	"health": 30,
+	"strength": 5,
 	"throwsPerTurn": 1,
 	"allowedThrows": ["rock", "paper", "scissors"],
 	"frequencies": [10, 80, 10]
   },
   "ScissorsEnemy": {
 	"displayName": "Brock",
-	"health": 3,
-	"strength": 1,
+	"health": 30,
+	"strength": 6,
 	"throwsPerTurn": 1,
 	"allowedThrows": ["rock", "paper", "scissors"],
 	"frequencies": [10, 10, 80]
   },
   "OddOneOutEnemy": {
 	"displayName": "Todd",
-	"health": 3,
-	"strength": 1,
+	"health": 30,
+	"strength": 5,
 	"throwsPerTurn": 1,
 	"allowedThrows": ["rock", "paper", "scissors"],
 	"behavior": "not_seen"
   },
   "MomentumEnemy": {
 	"displayName": "Mori",
-	"health": 20,
-	"strength": 1,
+	"health": 60,
+	"strength": 3,
 	"throwsPerTurn": 1,
 	"allowedThrows": ["rock", "paper", "scissors"],
 	"behavior": "momentum"
   },
   "RandomEnemy": {
 	"displayName": "Randy",
-	"health": 4,
-	"strength": 1,
+	"health": 45,
+	"strength": 5,
 	"throwsPerTurn": 1,
 	"allowedThrows": ["rock", "paper", "scissors"],
 	"behavior": "random"
   },
   "CopycatEnemy": {
 	"displayName": "Jay",
-	"health": 4,
-	"strength": 1,
+	"health": 45,
+	"strength": 5,
 	"throwsPerTurn": 1,
 	"allowedThrows": ["rock", "paper", "scissors"],
 	"behavior": "copy_last"
   },
   "CounterEnemy": {
 	"displayName": "Nerd",
-	"health": 5,
-	"strength": 1,
+	"health": 55,
+	"strength": 6,
 	"throwsPerTurn": 1,
 	"allowedThrows": ["rock", "paper", "scissors"],
 	"behavior": "counter_most_common"
   },
   "BossEnemy": {
 	"displayName": "GigaChad",
-	"health": 15,
-	"strength": 3,
+	"health": 111,
+	"strength": 11,
 	"throwsPerTurn": 2,
 	"allowedThrows": ["rock", "paper", "scissors"],
 	"behavior": "random",
@@ -74,8 +74,8 @@
   },
   "StubbornEnemy": {
 	"displayName": "Hungrybox (I'm stalling)",
-	"health": 10,
-	"strength": 1,
+	"health": 80,
+	"strength": 8,
 	"throwsPerTurn": 1,
 	"allowedThrows": ["rock", "paper", "scissors"],
 	"behavior": "random",

@@ -1,6 +1,7 @@
 using Godot;
 using Rps;
 using System;
+using System.Collections.Generic;
 
 public partial class Enemy : Node2D
 {
@@ -12,6 +13,9 @@ public partial class Enemy : Node2D
     private IEnemyBehavior behaviorInstance;
     public bool isBoss = false;
     public string BehaviorName => enemyData?.behavior;
+
+    // Status effects tracking (e.g., radioactive, poison, stun)
+    private Dictionary<string, int> statusEffects = new Dictionary<string, int>();
 
     private Label nameLabel;
 
@@ -135,5 +139,71 @@ public partial class Enemy : Node2D
     public void OnBattleResult()
     {
         GD.Print("Battle over");//TODO: make this actually do things
+    }
+
+    // Status effect methods
+    public void ApplyStatusEffect(string type, int stacks)
+    {
+        if (statusEffects.ContainsKey(type))
+            statusEffects[type] += stacks;
+        else
+            statusEffects[type] = stacks;
+
+        GD.Print($"{GetDisplayName()} gained {stacks} stack(s) of {type}. Total: {statusEffects[type]}");
+    }
+
+    public int GetStatusStacks(string type)
+    {
+        return statusEffects.TryGetValue(type, out var stacks) ? stacks : 0;
+    }
+
+    public void RemoveStatusEffect(string type)
+    {
+        if (statusEffects.ContainsKey(type))
+        {
+            statusEffects.Remove(type);
+            GD.Print($"{GetDisplayName()} lost all stacks of {type}");
+        }
+    }
+
+    public void ClearAllStatusEffects()
+    {
+        statusEffects.Clear();
+        GD.Print($"{GetDisplayName()} cleared all status effects");
+    }
+
+    // Process status effects at start of round (returns damage dealt)
+    public int ProcessStatusEffects()
+    {
+        int totalDamage = 0;
+
+        // Radioactive: deal damage equal to stacks
+        if (statusEffects.TryGetValue("radioactive", out int radioactiveStacks) && radioactiveStacks > 0)
+        {
+            totalDamage += radioactiveStacks;
+            GD.Print($"{GetDisplayName()} takes {radioactiveStacks} radioactive damage");
+        }
+
+        // Poison: deal damage equal to stacks, then reduce by 1
+        if (statusEffects.TryGetValue("poison", out int poisonStacks) && poisonStacks > 0)
+        {
+            totalDamage += poisonStacks;
+            statusEffects["poison"] = poisonStacks - 1;
+            if (statusEffects["poison"] <= 0)
+                statusEffects.Remove("poison");
+            GD.Print($"{GetDisplayName()} takes {poisonStacks} poison damage");
+        }
+
+        if (totalDamage > 0)
+        {
+            TakeDamage(totalDamage);
+        }
+
+        return totalDamage;
+    }
+
+    public Dictionary<string, int> GetAllStatusEffects()
+    {
+        return new Dictionary<string, int>(statusEffects);
     }
 }

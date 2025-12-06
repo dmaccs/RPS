@@ -9,6 +9,11 @@ public partial class ThrowDatabase : Node
 {
     public static ThrowDatabase Instance { get; private set; }
 
+    // Rarity weights for reward selection (cumulative percentages)
+    public static int CommonWeight = 60;      // 60% chance
+    public static int UncommonWeight = 37;    // 37% chance
+    public static int RareWeight = 3;         // 3% chance
+
     private Dictionary<string, ThrowData> throws = new();
 
     public override void _Ready()
@@ -73,8 +78,11 @@ public partial class ThrowDatabase : Node
         {
             Id = template.Id,
             Name = template.Name,
+            Description = template.Description,
             Attributes = new List<ThrowAttribute>(template.Attributes),
             Evolved = template.Evolved,
+            Rarity = template.Rarity,
+            Cost = template.Cost,
             Effect = new ThrowEffectData
             {
                 EffectType = template.Effect.EffectType,
@@ -115,6 +123,58 @@ public partial class ThrowDatabase : Node
     public bool Exists(string id)
     {
         return throws.ContainsKey(id);
+    }
+
+    // Get throws by rarity
+    public List<ThrowData> GetThrowsByRarity(ThrowRarity rarity)
+    {
+        return throws.Values.Where(t => t.Rarity == rarity).ToList();
+    }
+
+    // Get all non-starter throws (for rewards/shop)
+    public List<ThrowData> GetRewardableThrows()
+    {
+        return throws.Values.Where(t => t.Rarity != ThrowRarity.Starter).ToList();
+    }
+
+    // Select random throws weighted by rarity
+    public List<ThrowData> SelectRandomThrowsByRarity(int count, RandomNumberGenerator rng = null)
+    {
+        rng ??= new RandomNumberGenerator();
+        var selected = new List<ThrowData>();
+        var available = GetRewardableThrows();
+
+        int totalWeight = CommonWeight + UncommonWeight + RareWeight;
+
+        for (int i = 0; i < count && available.Count > 0; i++)
+        {
+            int roll = rng.RandiRange(1, totalWeight);
+            ThrowRarity targetRarity;
+
+            if (roll <= CommonWeight)
+                targetRarity = ThrowRarity.Common;
+            else if (roll <= CommonWeight + UncommonWeight)
+                targetRarity = ThrowRarity.Uncommon;
+            else
+                targetRarity = ThrowRarity.Rare;
+
+            // Get throws of that rarity from available pool
+            var rarityPool = available.Where(t => t.Rarity == targetRarity).ToList();
+
+            // If no throws of that rarity available, fall back to any available
+            if (rarityPool.Count == 0)
+                rarityPool = available;
+
+            if (rarityPool.Count > 0)
+            {
+                int index = rng.RandiRange(0, rarityPool.Count - 1);
+                var selectedThrow = rarityPool[index];
+                selected.Add(selectedThrow);
+                available.Remove(selectedThrow);
+            }
+        }
+
+        return selected;
     }
 }
 
